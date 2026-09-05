@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+# Supersede in-flight runs for the same ref: a push that lands while CI is still
+# working makes the older run's result irrelevant. `main` is excluded so pushes
+# there always produce a complete record.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 # Read-only by default; no job here needs to write back to the repository.
 permissions:
   contents: read
@@ -24,7 +31,7 @@ jobs:
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
-      - run: uv sync --frozen --python ${{ matrix.python-version }}
+      - run: uv sync --frozen --no-default-groups --group test --python ${{ matrix.python-version }}
       - name: Run tests, failing if any is skipped
         run: |
           # Defect 1 was a suite that skipped 39 of 40 tests and stayed green.
@@ -76,9 +83,10 @@ jobs:
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
-      - run: uv sync --frozen
+      - run: uv sync --frozen --no-default-groups --group codegen --group lint
       - name: Regenerate models from the vendored schema
-        run: uv run poe generate
+        # Called directly rather than through poe, which lives in the dev group.
+        run: uv run python tools/generate.py
       - name: Fail if the committed output drifted
         run: |
           git diff --exit-code src/gemara/v1/_models.py src/gemara/v1/_registry.py \
@@ -94,6 +102,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: true
       - name: Resolve and install the lowest declared direct dependencies
         run: uv sync
       - name: Show what actually got installed

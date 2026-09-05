@@ -17,8 +17,6 @@ import tempfile
 from pathlib import Path
 from typing import Any, Final
 
-from datamodel_code_generator import Error, InputFileType, generate
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = PROJECT_ROOT / "schemas" / "gemara-v1.schema.json"
 PROVENANCE_PATH = PROJECT_ROOT / "schemas" / "provenance.json"
@@ -229,7 +227,13 @@ def run_codegen(schema: dict[str, Any]) -> str:
     `input_filename` sets the name the generated header records; it is fixed
     because the drift gate compares committed bytes, and a varying header would
     fail it on its own. Verified byte-identical to the equivalent CLI invocation.
+
+    Imported here rather than at module scope so this module's pure functions --
+    the ones the unit tests exercise -- stay importable without the codegen
+    dependency installed. Only regenerating needs it.
     """
+    from datamodel_code_generator import Error, InputFileType, generate
+
     with tempfile.TemporaryDirectory() as tmp:
         output = Path(tmp) / "models.py"
         try:
