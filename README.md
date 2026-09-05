@@ -4,53 +4,48 @@
 models, generated from the upstream CUE schemas.
 
 ```bash
-pip install py-gemara          # core: pydantic only
-pip install py-gemara[yaml]    # adds YAML support
+pip install py-gemara
 ```
 
 ```python
-from gemara.v1 import load, DOCUMENT_TYPES, SCHEMA_VERSION, ControlCatalog
+from gemara.v1 import ControlCatalog, Lexicon, load
 
 doc = load("catalog.yaml")  # dispatches on metadata.type
-assert isinstance(doc, ControlCatalog)
+
+match doc:
+    case ControlCatalog():
+        print(len(doc.controls or []))
+    case Lexicon():
+        print(len(doc.terms or []))
 ```
 
-`DOCUMENT_TYPES` maps each of the 13 `metadata.type` values to its model, and is
-generated from the schema's discriminators — you never need to hand-maintain a
-dispatch table. `load` and `loads` raise `UnknownDocumentTypeError` (naming the
-offending value and the 13 valid ones) or `pydantic.ValidationError`.
+`load` takes a path or an open file, `loads` takes text or bytes, and both read
+JSON or YAML. They dispatch on `metadata.type` through `DOCUMENT_TYPES` — a
+registry generated from the schema's own discriminators, so you never hand-write
+a dispatch table — and return a `GemaraDocument`, the union of the 13 document
+models. Narrowing it with `match` or `isinstance` typechecks under `mypy
+--strict`; the package ships `py.typed`.
 
-Models are fully typed and the package ships `py.typed`.
+Failures raise from one hierarchy: `UnknownDocumentTypeError` when
+`metadata.type` is missing or unrecognised (its message names the offending
+value and the 13 valid ones), `GemaraError` for anything unparseable, and
+`pydantic.ValidationError` when a document does not match its model.
 
-## Versioning
+`SCHEMA_VERSION` reports the Gemara release these models were generated from:
+currently **v1.5.0**.
 
-`SCHEMA_VERSION` reports the Gemara schema release these models were generated
-from: currently **v1.5.0**. Changes within Gemara v1 are additive by
-construction — upstream CI enforces this with `oasdiff` — so one model set reads
-every v1.x document.
+## Reading documents from a newer v1.x
 
-**Documents from a newer v1.x are read, not rejected.** Properties these models
-do not know about are ignored: accepted on the way in, then dropped rather than
-carried onto the model or written back out — the same behaviour as
-[go-gemara](https://github.com/gemaraproj/go-gemara), where a property with no
-corresponding struct field is neither stored nor re-marshalled. Without this,
-every additive release upstream would break every already-installed reader until
-it re-synced, and a schema library that rejects valid documents of its own major
-version is worse than no library.
+Changes within Gemara v1 are additive, so these models read every v1.x document,
+including ones written against a minor newer than `SCHEMA_VERSION`. Properties
+they do not recognise are ignored — accepted, then dropped rather than carried
+onto the model. This matches
+[go-gemara](https://github.com/gemaraproj/go-gemara).
 
 The consequence worth knowing: `load` followed by `model_dump` is **not** a
-faithful copy of a document written against a newer minor — unknown fields are
-absent from the output. Treat these models as a reader, not a round-tripping
-editor, and keep the source document if you need to preserve it byte for byte.
-
-Strictness is relocated, not lost: required fields, enums, patterns and length
-bounds still apply, and `cue vet` remains the source of truth for the rest.
-
-There is also deliberately no per-minor namespace. Pinning to an older minor
-would buy breakage, not safety.
-
-A future `gemara.v2` will ship as a separate distribution, installable
-side by side, because `gemara` is a PEP 420 namespace package.
+faithful copy of such a document, because its newer fields are absent from the
+output. These models are a reader, not a round-tripping editor — keep the source
+if you need to preserve it byte for byte.
 
 ## Known limitations
 
@@ -62,24 +57,8 @@ fixtures parse successfully, including `bad-lexicon-duplicate-term-id`,
 `bad-risk-catalog-duplicate-rank`, `bad-evaluation-log-missing-start`, and the
 `bad-*-invalid-group` family.
 
-If you need full validation, run `cue vet` against the Gemara schemas. The gaps
-are pinned in `SEMANTIC_GAPS` in `tests/test_fixtures.py`, so any newly-gained
-strictness fails the test suite instead of passing unnoticed.
-
-## Development
-
-```bash
-uv sync
-uv run poe test        # pytest
-uv run poe lint        # ruff check
-uv run poe typecheck   # mypy --strict
-uv run poe generate    # regenerate _models.py and _registry.py (hermetic)
-uv run poe sync-schema # re-vendor from upstream (maintainer only; needs cue)
-```
-
-`src/gemara/v1/_models.py` and `_registry.py` are generated and committed. CI
-regenerates them and fails on any diff, so edit `tools/generate.py`, never the
-output.
+What still applies: required fields, enums, patterns, and length bounds. If you
+need full validation, run `cue vet` against the Gemara schemas.
 
 ## License
 

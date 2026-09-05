@@ -547,10 +547,6 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
-]
-
-[package.optional-dependencies]
-yaml = [
     { name = "pyyaml" },
 ]
 
@@ -560,7 +556,6 @@ dev = [
     { name = "mypy" },
     { name = "poethepoet" },
     { name = "pytest" },
-    { name = "pyyaml" },
     { name = "ruff" },
     { name = "types-pyyaml" },
 ]
@@ -568,9 +563,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2.9" },
-    { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
 ]
-provides-extras = ["yaml"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -578,7 +572,6 @@ dev = [
     { name = "mypy", specifier = ">=2.3" },
     { name = "poethepoet", specifier = ">=0.30" },
     { name = "pytest", specifier = ">=8.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = "==0.16.6" },
     { name = "types-pyyaml", specifier = ">=6.0" },
 ]

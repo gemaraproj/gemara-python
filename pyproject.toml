@@ -9,7 +9,7 @@ description = "Gemara v1 schema types as Pydantic v2 models"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.9"]
+dependencies = ["pydantic>=2.9", "pyyaml>=6.0"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3.11",
@@ -18,9 +18,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
-
-[project.optional-dependencies]
-yaml = ["pyyaml>=6.0"]
 
 [project.urls]
 Homepage = "https://github.com/jpower432/py-gemara"
@@ -34,7 +31,6 @@ dev = [
     "mypy>=2.3",
     "poethepoet>=0.30",
     "pytest>=8.0",
-    "pyyaml>=6.0",
     "types-PyYAML>=6.0",
 ]
 

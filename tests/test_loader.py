@@ -1,4 +1,4 @@
-"""Loader dispatch, error surface, and the yaml extra."""
+"""Loader dispatch, input handling, and the error surface."""
 
 from __future__ import annotations
 

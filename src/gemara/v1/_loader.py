@@ -5,10 +5,11 @@ Hand-written; passes `mypy --strict`.
 
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 from typing import IO, Any, cast
+
+import yaml
 
 from gemara.v1._registry import DOCUMENT_TYPES, GemaraDocument
 
@@ -42,16 +43,7 @@ def _decode(data: bytes | bytearray | memoryview) -> str:
 
 
 def _parse(text: str) -> Any:
-    try:
-        import yaml
-    except ModuleNotFoundError:
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise GemaraError(
-                "could not parse the document as JSON and PyYAML is not installed; "
-                "install the yaml extra with `pip install py-gemara[yaml]` to read YAML"
-            ) from exc
+    """Parse JSON or YAML. YAML is a superset of JSON, so one parser covers both."""
     try:
         parsed: Any = yaml.safe_load(text)
     except yaml.YAMLError as exc:
@@ -90,8 +82,7 @@ def loads(text: str | bytes | bytearray | memoryview) -> GemaraDocument:
     `UnknownDocumentTypeError` (a `GemaraError` subclass) if `metadata.type` is
     missing or unrecognised; and `pydantic.ValidationError` if the document
     does not match its model. No other exception type -- in particular no
-    `yaml.YAMLError` or `json.JSONDecodeError` -- escapes this function,
-    regardless of whether the optional `yaml` extra is installed.
+    `yaml.YAMLError` -- escapes this function.
     """
     if isinstance(text, str):
         decoded = text
