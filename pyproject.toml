@@ -20,18 +20,28 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jpower432/py-gemara"
-Repository = "https://github.com/jpower432/py-gemara"
-Issues = "https://github.com/jpower432/py-gemara/issues"
+Homepage = "https://github.com/gemaraproj/py-gemara"
+Repository = "https://github.com/gemaraproj/py-gemara"
+Issues = "https://github.com/gemaraproj/py-gemara/issues"
 
 [dependency-groups]
+test = ["pytest>=8.0"]
+
+# ruff is pinned exactly because `poe generate` formats generated output with it,
+# so an unpinned bump would churn committed bytes and fail the drift gate.
+lint = ["ruff==0.16.6", "mypy>=2.3", "types-PyYAML>=6.0"]
+
+# Needed only to regenerate the models. Pinned exactly for the same reason as
+# ruff: it decides the committed bytes the drift gate compares against.
+codegen = ["datamodel-code-generator==0.76.2"]
+
+# Maintainer-only: re-vendoring the schema also needs `cue` on PATH, which is not
+# a Python dependency and cannot be declared here. See CONTRIBUTING.md.
 dev = [
-    "datamodel-code-generator==0.76.2",
-    "ruff==0.16.6",
-    "mypy>=2.3",
+    {include-group = "test"},
+    {include-group = "lint"},
+    {include-group = "codegen"},
     "poethepoet>=0.30",
-    "pytest>=8.0",
-    "types-PyYAML>=6.0",
 ]
 
 [tool.uv.build-backend]

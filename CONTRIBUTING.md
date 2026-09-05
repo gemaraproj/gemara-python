@@ -8,6 +8,11 @@ uv run poe typecheck   # mypy --strict
 uv run poe format      # ruff format
 ```
 
+Dependencies are split into purpose-scoped groups, so a job or a contributor can
+install only what it needs: `test`, `lint`, `codegen` (regenerating the models),
+and `dev`, which includes all three plus the task runner. `uv sync` installs
+`dev`; `uv sync --only-group lint` is enough to run the linters.
+
 ## How the models are produced
 
 Two steps, deliberately separated by whether they need the outside world.
@@ -21,7 +26,7 @@ upstream's OpenAPI projection, which loses integer types and flattens
 `date-time` to `date`.
 
 `poe generate` is hermetic — no `cue`, no network. It reads the vendored schema,
-applies its repair passes, runs `datamodel-codegen`, and writes
+applies its repair passes, calls `datamodel-code-generator` in-process, and writes
 `src/gemara/v1/_models.py` and `_registry.py`.
 
 Both generated files are committed. **Never edit them by hand**: CI regenerates

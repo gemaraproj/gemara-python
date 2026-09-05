@@ -551,6 +551,9 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+codegen = [
+    { name = "datamodel-code-generator" },
+]
 dev = [
     { name = "datamodel-code-generator" },
     { name = "mypy" },
@@ -558,6 +561,14 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "types-pyyaml" },
+]
+lint = [
+    { name = "mypy" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+]
+test = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -567,6 +578,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+codegen = [{ name = "datamodel-code-generator", specifier = "==0.76.2" }]
 dev = [
     { name = "datamodel-code-generator", specifier = "==0.76.2" },
     { name = "mypy", specifier = ">=2.3" },
@@ -575,6 +587,12 @@ dev = [
     { name = "ruff", specifier = "==0.16.6" },
     { name = "types-pyyaml", specifier = ">=6.0" },
 ]
+lint = [
+    { name = "mypy", specifier = ">=2.3" },
+    { name = "ruff", specifier = "==0.16.6" },
+    { name = "types-pyyaml", specifier = ">=6.0" },
+]
+test = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "pydantic"
