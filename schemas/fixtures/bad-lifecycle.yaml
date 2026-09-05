@@ -1,0 +1,26 @@
+metadata:
+  id: TEST-BAD-LIFECYCLE
+  type: GuidanceCatalog
+  gemara-version: "1.1.0"
+  version: "1.0.0"
+  description: Retired guideline with recommendations should fail validation.
+  author:
+    id: test
+    name: Test Author
+    type: Human
+
+title: Bad Lifecycle Test
+type: Standard
+groups:
+  - id: fam-1
+    title: Family One
+    description: Test family.
+
+guidelines:
+  - id: GL-001
+    group: fam-1
+    title: Retired Guideline With Recommendations
+    objective: This should fail because retired guidelines cannot have recommendations.
+    state: Retired
+    recommendations:
+      - This recommendation should not exist on a retired guideline.

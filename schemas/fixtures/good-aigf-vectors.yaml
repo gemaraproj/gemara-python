@@ -1,0 +1,202 @@
+# AIGF Vector Catalog
+title: AI Governance Framework Risk Vectors
+metadata:
+  id: AIR-VEC
+  type: VectorCatalog
+  gemara-version: "1.1.0"
+  version: 0.1.0
+  description: >
+    AIGF risks expressed as Gemara vectors. Each vector describes a
+    pathway through which AI system failures or negative outcomes
+    may be realized in financial services deployments.
+  author:
+    id: finos
+    name: FINOS
+    type: Human
+
+groups:
+  - id: model-availability
+    title: Model Availability
+    description: >
+      Foundation models often rely on GPU-heavy infrastructure hosted by third-party providers, introducing risks 
+      related to service availability and performance. Key threats include Denial of Wallet (excessive usage leading 
+      to cost spikes or throttling), outages from immature Technology Service Providers, and VRAM exhaustion due to 
+      memory leaks or configuration changes. These issues can disrupt operations, limit failover options, and 
+      undermine the reliability of LLM-based applications.
+  - id: operational
+    title: Operational
+    description: >
+      Risks arising from AI system behaviour, reliability, and
+      operational characteristics that may impact business processes.
+  - id: prompt-injection
+    title: Prompt Injection
+    description: >
+      Prompt injection occurs when attackers craft inputs that manipulate a language model into producing 
+      unintended, harmful, or unauthorized outputs. These attacks can be direct—overriding the model’s 
+      intended behaviour—or indirect, where malicious instructions are hidden in third-party content and 
+      later processed by the model. This threat can lead to misinformation, data leakage, reputational damage, 
+      or unsafe automated actions, especially in systems without strong safeguards or human oversight.
+  - id: data-poisoning
+    title: Data Poisoning
+    description: >
+      Data poisoning occurs when adversaries tamper with training or fine-tuning data to manipulate an 
+      AI model’s behaviour, often by injecting misleading or malicious patterns. This can lead to biased 
+      decision-making, such as incorrectly approving fraudulent transactions or degrading model performance 
+      in subtle ways. The risk is heightened in systems that continuously learn from unvalidated or 
+      third-party data, with impacts that may remain hidden until a major failure occurs.
+  - id: information-leakage
+    title: Information Leakage
+    description: >
+      Using third-party hosted LLMs creates a two-way trust boundary where neither inputs nor outputs can be fully trusted.
+      Sensitive financial data sent for inference may be memorized by models, leaked through prompt attacks, or exposed via 
+      inadequate provider controls. This risks exposing customer PII, proprietary algorithms, and confidential business 
+      information, particularly with free or poorly-governed LLM services.
+
+vectors:
+  - id: AIR-RC-001-01
+    title: Model Memorization
+    group: information-leakage
+    description: >
+      LLMs can memorize sensitive data from training or user interactions,
+      later disclosing customer details, loan terms, or trading strategies
+      in unrelated sessions. This includes cross-user leakage, where one
+      user's sensitive data is disclosed to another.
+  - id: AIR-RC-001-02
+    title: Prompt-Based Data Extraction
+    group: information-leakage
+    description: >
+      Adversaries craft prompts to extract memorized sensitive information
+      from hosted models. Targeted prompt sequences can cause the model to
+      reproduce confidential training data, PII, or proprietary algorithms
+      that were not intended to be accessible.
+  - id: AIR-RC-001-03
+    title: Inadequate Provider Data Controls
+    group: information-leakage
+    description: >
+      Insufficient sanitization, encryption, or access controls by hosted
+      model providers increases disclosure risk. Providers may lack
+      transparent mechanisms for how input data is processed, retained,
+      or sanitized, leading to persistent exposure of proprietary data.
+  - id: AIR-RC-001-04
+    title: Provider Data Handling Deficiency
+    group: information-leakage
+    description: >
+      Without clear contracts ensuring encryption, retention limits, and
+      secure deletion, institutions lose control over sensitive data sent
+      to hosted models. Providers may lack transparency about data
+      processing and retention practices.
+  - id: AIR-RC-001-05
+    title: Fine-Tuning Data Exposure
+    group: information-leakage
+    description: >
+      Using proprietary data for fine-tuning embeds sensitive information
+      directly into model weights, potentially making it accessible to
+      unauthorized users if access controls are inadequate.
+  - id: AIR-SEC-009-01
+    title: Training Data Manipulation
+    group: data-poisoning
+    description: >
+      Adversaries alter training datasets by changing labels or injecting
+      crafted data points with hidden patterns. In financial services,
+      this includes marking fraudulent transactions as legitimate to
+      corrupt fraud detection models, or embedding backdoor triggers
+      exploitable after deployment.
+  - id: AIR-SEC-009-02
+    title: Continuous Learning Exploitation
+    group: data-poisoning
+    description: >
+      Systems that continuously learn from new data are vulnerable when
+      validation mechanisms are inadequate. Adversaries systematically
+      feed misleading information over time to gradually skew
+      decision-making in credit scoring, trading, or risk models.
+  - id: AIR-SEC-009-03
+    title: Third-Party Data Compromise
+    group: data-poisoning
+    description: >
+      Financial institutions rely on external data feeds such as market
+      data, credit references, and KYC/AML watchlists. Compromise of
+      these sources introduces poisoned data that can unknowingly embed
+      biases or vulnerabilities into downstream models.
+  - id: AIR-SEC-009-04
+    title: Bias Introduction
+    group: data-poisoning
+    description: >
+      Deliberate data poisoning amplifies biases in credit scoring or
+      loan approval models, leading to discriminatory outcomes and
+      regulatory non-compliance. Effects are subtle and may remain
+      hidden until major failures or regulatory interventions occur.
+  - id: AIR-OP-007-01
+    title: Denial of Wallet
+    group: model-availability
+    description: >
+      Usage patterns inadvertently lead to excessive costs, throttling,
+      or service disruptions. Overly long prompts from large document
+      chunking, multimedia content, or token-expensive adversarial queries
+      can exhaust token limits or drive up charges. Poorly throttled
+      scripts or agentic systems may generate excessive API calls,
+      overwhelming resources and bypassing capacity planning.
+  - id: AIR-OP-007-02
+    title: TSP Outage or Degradation
+    group: model-availability
+    description: >
+      External technology service providers may lack operational maturity
+      to maintain stable service levels, leading to unexpected outages or
+      performance degradation under load. Tight coupling to a specific
+      proprietary provider limits failover capability, violating business
+      continuity expectations.
+  - id: AIR-OP-007-03
+    title: VRAM Exhaustion
+    group: model-availability
+    description: >
+      Video RAM exhaustion on serving infrastructure compromises model
+      responsiveness or triggers crashes. Causes include configuration
+      changes that exceed available resources, caching strategies that
+      trade VRAM for throughput, and memory leaks in model-serving
+      libraries that prevent proper resource release.
+  - id: AIR-SEC-010-01
+    title: Direct Prompt Injection
+    group: prompt-injection
+    description: >
+      Attackers interact directly with the LLM to override its intended
+      behaviour. Crafted inputs attempt to bypass system prompts, ignore
+      safety guardrails, or coerce the model into disclosing sensitive
+      information. Requires no special privileges and can be executed
+      through simple input manipulation.
+  - id: AIR-SEC-010-02
+    title: Indirect Prompt Injection
+    group: prompt-injection
+    description: >
+      Malicious instructions are embedded in third-party content such as
+      websites, emails, or uploaded documents. When the LLM processes
+      this contaminated data, the injected prompts can hijack decision-making,
+      escalate privileges, trigger unauthorized actions, or exfiltrate
+      data being processed. Especially dangerous in automated workflows
+      or multi-agent architectures.
+  - id: AIR-SEC-010-03
+    title: Model Profiling and Inversion
+    group: prompt-injection
+    description: >
+      Sophisticated prompt injection techniques probe the internal
+      structure of an LLM to extract model biases, proprietary system
+      prompts, configurations, or training data used in fine-tuning or
+      RAG corpora. Enables intellectual property theft, facilitates
+      future attacks, or supports creation of clone models.
+  - id: AIR-OP-018
+    title: Model Overreach / Expanded Use
+    group: operational
+    description: >
+      AI systems may be used beyond their originally intended and
+      validated scope, leading to unreliable outputs in contexts the
+      model was not designed or tested for. Scope creep can occur
+      gradually as users discover new applications, or suddenly when
+      systems are repurposed without adequate re-evaluation of risks
+      and performance characteristics.
+  - id: AIR-OP-020
+    title: Reputational Risk
+    group: operational
+    description: >
+      AI systems may generate outputs that are offensive, inappropriate,
+      misleading, or otherwise damaging to the organization's
+      reputation. This risk is amplified when attackers deliberately
+      manipulate models into producing harmful content that is then
+      attributed to the organization.

@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Superpowers spec artifacts (local design docs, not tracked)
+docs/superpowers/
+
+# Superpowers SDD workspace (scratch, not tracked)
+.superpowers/
+
+# Written to the repo root by CI's no-skipped-tests step (see ci.yml/release.yml)
+summary.txt

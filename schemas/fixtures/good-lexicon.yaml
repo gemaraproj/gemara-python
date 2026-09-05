@@ -1,0 +1,27 @@
+title: Example security lexicon
+metadata:
+  id: example-lexicon-001
+  type: Lexicon
+  gemara-version: "1.1.0"
+  version: "1.0.0"
+  description: >
+    Minimal lexicon illustrating the Gemara Lexicon artifact schema.
+  author:
+    id: gemara-example
+    name: Gemara Example Author
+    type: Human
+terms:
+  - id: sbom
+    title: Software Bill of Materials
+    definition: >
+      A formal, machine-readable inventory of software components and dependencies.
+    synonyms:
+      - SBOM
+      - software bill of materials
+    references:
+      - citation: NIST SP 800-218 SSDF
+        url: https://csrc.nist.gov/publications/detail/sp/800-218/final
+  - id: vulnerability-disclosure
+    title: Coordinated vulnerability disclosure
+    definition: >
+      A process for reporting and remediating security flaws before public release.

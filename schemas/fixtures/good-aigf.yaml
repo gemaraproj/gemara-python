@@ -1,0 +1,278 @@
+metadata:
+  id: FINOS-AIR
+  type: GuidanceCatalog
+  gemara-version: "1.1.0"
+  description: >
+    A comprehensive collection of risks and mitigations that support
+    on-boarding, development of, and running Generative AI solutions.
+  author:
+    id: finos
+    name: FINOS
+    type: Human
+  version: 0.1.0
+  mapping-references:
+    - id: AIR-PRIN
+      title: AI Governance Framework Principles
+      version: 0.1.0
+      url: "https://aigf.finos.org/principles"
+      description: Core principles underpinning the FINOS AI Governance Framework
+    - id: AIR-VEC
+      title: AI Governance Framework Risk Vectors
+      version: 0.1.0
+      url: "https://aigf.finos.org/risks"
+      description: AIGF risks expressed as Gemara vectors
+title: AI Governance Framework
+type: Framework
+front-matter: |
+  AI, especially Generative AI, is reshaping financial services, enhancing products, client interactions, and productivity. However, challenges like hallucinations and model unpredictability make safe deployment complex. Rapid advancements require flexible governance.
+  Financial institutions are eager to adopt AI but face regulatory hurdles. Existing frameworks may not address AI's unique risks, necessitating an adaptive governance model for safe and compliant integration.
+  The following framework has been developed by FINOS (Fintech Open Source Foundation) members, providing a comprehensive catalogue of risks and associated mitigations. We suggest using our heuristic risk identification framework to determine which risks are most relevant for a given use case.
+groups:
+  - id: DET
+    title: Detective
+    description: Detection and Continuous Improvement
+  - id: PREV
+    title: Preventive
+    description: Prevention and Risk Mitigation
+guidelines:
+  - id: AIR-PREV-002
+    group: PREV
+    title: Data Filtering From External Knowledge Bases
+    objective: >
+      This control addresses the critical need to sanitize, filter, and appropriately 
+      manage sensitive information when AI systems ingest data from internal knowledge 
+      sources such as wikis, document management systems, databases, or collaboration 
+      platforms (e.g., Confluence, SharePoint, internal websites). The primary objective 
+      is to prevent the inadvertent exposure, leakage, or manipulation of confidential 
+      organizational knowledge when this data is processed by AI models, converted into 
+      embeddings for vector databases, or used in Retrieval Augmented Generation (RAG) systems.
+      Given that many AI applications, particularly RAG systems, rely on internal knowledge bases to 
+      provide contextually relevant and organization-specific responses, ensuring that sensitive 
+      information within these sources is appropriately handled is paramount for maintaining 
+      data confidentiality and preventing unauthorized access.
+    rationale:
+      importance: >
+        This control is particularly important given the evolving nature of AI technologies 
+        and the sophisticated ways they interact with and process large volumes of organizational 
+        information. A proactive approach to data sanitization helps maintain confidentiality, 
+        integrity, and compliance while enabling the organization to benefit from AI capabilities.
+      goals:
+        - "Prevention of Data Leakage: Significantly reduces the risk of sensitive organizational information being inadvertently exposed through AI system outputs or stored in less secure external services."
+        - "Regulatory Compliance: Helps meet requirements under data protection regulations (e.g., GDPR, CCPA, GLBA) that mandate the protection of personal and sensitive business information."
+        - "Intellectual Property Protection: Safeguards valuable trade secrets, strategic information, and proprietary data from unauthorized disclosure or competitive exposure."
+        - "Reduced Attack Surface: By controlling the information that enters AI operational environments, organizations minimize the potential impact of AI-specific attacks like prompt injection or data extraction attempts."
+        - "Enhanced Trust and Confidence: Builds stakeholder confidence in AI systems by demonstrating rigorous data protection practices."
+        - "Compliance with Internal Data Governance: Supports adherence to internal data classification and handling policies within AI contexts."
+        - "Mitigation of Insider Risk: Reduces the risk of sensitive information being accessed by unauthorized internal users through AI interfaces."
+    see-also:
+      - AIR-DET-001
+      - AIR-PREV-006
+      - AIR-DET-016
+    statements:
+      - id: AIR-PREV-002.1
+        title: Rigorous Data Cleansing and Anonymization at Ingestion
+        text: "Identify and remove or appropriately anonymize sensitive details to ensure that data fed into the AI system is free from information that could pose a security or privacy risk if inadvertently exposed."
+        recommendations:
+          - >
+            Pre-Processing Review and Cleansing: Before any information from
+            internal knowledge sources is ingested by an AI system, it must
+            undergo a thorough review and cleansing process to identify and
+            remove or appropriately anonymize sensitive details.
+          - >
+            Categories of Data to Target for Filtering: Personally
+            Identifiable Information (PII), Proprietary Business Information,
+            Sensitive Internal Operational Data, Confidential Customer Data,
+            and Regulatory or Compliance-Sensitive Information.
+          - >
+            Filtering and Anonymization Methods: Data Masking, Redaction,
+            Generalization, Tokenization, and Synthetic Data Generation.
+      - id: AIR-PREV-002.2
+        title: Segregation for Highly Sensitive Data
+        text: ""
+        recommendations:
+          - >
+            Isolated AI Systems for Critical Data: For datasets containing
+            exceptionally sensitive information that cannot be adequately
+            protected through standard cleansing, implement separate, isolated
+            AI systems with stricter access controls, enhanced encryption,
+            and limited network connectivity.
+          - >
+            Access Domain-Based Segregation: Segment data and AI system access
+            based on clearly defined access domains that mirror the
+            organization's existing data classification and access control
+            structures.
+      - id: AIR-PREV-002.3
+        title: Filtering AI System Outputs (Secondary Defense)
+        text: ""
+        recommendations:
+          - >
+            Response Filtering and Validation: Responses generated by the AI
+            system should be monitored and filtered before being presented to
+            users, acting as a safety net to detect sensitive data that might
+            have bypassed initial input cleansing.
+          - >
+            Contextual Output Analysis: Implement intelligent filtering that
+            considers the context of the user's query and their authorization
+            level to determine what information should be included in the
+            response.
+      - id: AIR-PREV-002.4
+        title: Integration with Source System Access Controls
+        text: ""
+        recommendations:
+          - "Respect Original Permissions: Design the AI system to respect and replicate the original access control permissions from source systems."
+          - "Dynamic Source Querying: For real-time RAG systems, consider querying source systems dynamically while respecting user permissions, rather than pre-processing all data indiscriminately."
+      - id: AIR-PREV-002.5
+        title: Monitoring and Continuous Improvement
+        text: >
+          Periodically audit the effectiveness of data filtering processes
+          by sampling processed data and checking for any sensitive
+          information that may have been missed.
+        recommendations:
+          - "Regular Review of Filtering Effectiveness: Periodically audit the effectiveness of data filtering processes by sampling processed data."
+          - "Feedback Loop Integration: Establish mechanisms for users and reviewers to report instances where sensitive information may have been inappropriately exposed."
+          - "Threat Intelligence Integration: Stay informed about new types of data leakage vectors and attack techniques that might affect AI systems."
+    principles:
+      - reference-id: AIR-PRIN
+        entries:
+          - reference-id: AIR-PRIN-001
+            remarks: Filtering and anonymization applied before data enters AI pipelines
+          - reference-id: AIR-PRIN-002
+            remarks: Filtering strategies respect source data sensitivity and access controls
+          - reference-id: AIR-PRIN-003
+            remarks: Only necessary data included in AI systems, de-identified where possible
+          - reference-id: AIR-PRIN-004
+            remarks: Multiple filtering layers at ingestion, processing, and output
+          - reference-id: AIR-PRIN-005
+            remarks: Audit trails document what filtering has been applied and why
+    vectors:
+      - reference-id: AIR-VEC
+        entries:
+          - reference-id: AIR-RC-001-01
+          - reference-id: AIR-RC-001-02
+          - reference-id: AIR-RC-001-03
+          - reference-id: AIR-RC-001-04
+          - reference-id: AIR-RC-001-05
+          - reference-id: AIR-SEC-009-01
+          - reference-id: AIR-SEC-009-02
+          - reference-id: AIR-SEC-009-03
+          - reference-id: AIR-SEC-009-04
+    state: Active
+
+  - id: AIR-PREV-003
+    group: PREV
+    title: User/App/Model Firewalling
+    objective: >
+      User/App/Model Firewalling encompasses the set of security controls
+      applied at the boundaries between users, applications, AI models,
+      and supporting data stores such as RAG databases. When internal
+      company information is used to enrich a RAG database, especially if
+      this involves processing by external services, this data and the
+      external communication pathways must be carefully managed and
+      secured. Any proprietary or sensitive information sent to an external
+      service for such processing requires rigorous filtering before
+      transmission to prevent data leakage.
+    rationale:
+      importance: >
+        Implementing comprehensive user/app/model firewalling provides
+        critical security benefits including attack prevention, data
+        protection, service availability, reputation protection, and
+        compliance support. Firewalling blocks prompt injection attacks
+        and malicious inputs before they reach AI models, prevents
+        sensitive information leakage through AI outputs or RAG processing,
+        and helps meet regulatory requirements for data handling and
+        system security.
+      goals:
+        - "RAG Data Ingestion: Filter sensitive or private data before transmitting internal information to external services for embedding creation"
+        - "User Input to AI Model: Detect and block malicious or abusive user inputs such as Prompt Injection attacks"
+        - "AI Model Output: Detect excessively long responses, format deviations, evasion patterns, data leakage, and inappropriate content"
+    see-also:
+      - AIR-PREV-017
+      - AIR-PREV-008
+      - AIR-DET-015
+    statements:
+      - id: AIR-PREV-003.1
+        title: RAG Data Ingestion Filtering
+        text: ""
+        recommendations:
+          - >
+            RAG Database Security: While it's often more practical to
+            pre-process and filter data for RAG systems before sending it
+            for external embedding creation, organizations might also
+            consider in-line filters for real-time checks. Once internal
+            information is converted into embeddings and stored in vector
+            databases, the data becomes largely opaque to traditional
+            security tools.
+          - >
+            Filtering Efficacy: Static filters based on regular expressions
+            or keyword blocklists are effective for well-defined patterns
+            but less effective at identifying nuanced issues such as
+            generic private information or subtle Prompt Injection attacks.
+          - >
+            Streaming Outputs: Streaming responses improve user experience
+            but implementing output filtering can be challenging. An
+            approach is to stream while performing on-the-fly detection,
+            cancelling output if an issue is found.
+      - id: AIR-PREV-003.2
+        title: Remediation Techniques
+        text: ""
+        recommendations:
+          - >
+            Basic Filters: Simple static checks using blocklists and
+            regular expressions can detect rudimentary attacks or policy
+            violations.
+          - >
+            System Prompts (Caution Advised): While system prompts can
+            instruct an LLM on what to avoid, they are generally not a
+            robust security control. Attackers can often bypass these
+            instructions.
+          - >
+            LLM as a Judge: A secondary, specialized LLM analyzes user
+            queries and the primary LLM's responses, categorizing
+            inputs/outputs for various risks such as prompt injection,
+            abuse, hate speech, and data leakage.
+          - >
+            Human Feedback Loop: Implementing a system where users can
+            easily report problematic AI responses provides a valuable
+            complementary control.
+      - id: AIR-PREV-003.3
+        title: Additional Considerations
+        text: ""
+        recommendations:
+          - >
+            API Security and Observability: Implementing a comprehensive
+            API monitoring and security solution offers benefits beyond
+            AI-specific threats. A security proxy can enforce encrypted
+            communication between all AI system components.
+          - >
+            Logging and Analysis: Detailed logging of interactions is
+            essential for understanding user behavior, system performance,
+            and detection of sophisticated attacks or anomalies.
+      - id: AIR-PREV-003.4
+        title: Challenges and Considerations
+        text: >
+          RAG Database Security: Vector databases make traditional security
+          filtering difficult once data is embedded. Filtering Efficacy:
+          Static filters may miss nuanced attacks or sophisticated content.
+          Streaming Outputs: Real-time filtering creates trade-offs between
+          security and user experience.
+    principles:
+      - reference-id: AIR-PRIN
+        entries:
+          - reference-id: AIR-PRIN-001
+            remarks: RAG data filtered before transmission to external services
+          - reference-id: AIR-PRIN-004
+            remarks: Layered filtering at user input, model output, and RAG ingestion boundaries
+          - reference-id: AIR-PRIN-005
+            remarks: Logging and analysis of all interactions for audit and anomaly detection
+    vectors:
+      - reference-id: AIR-VEC
+        entries:
+          - reference-id: AIR-OP-007-01
+          - reference-id: AIR-OP-007-02
+          - reference-id: AIR-OP-007-03
+          - reference-id: AIR-SEC-010-01
+          - reference-id: AIR-SEC-010-02
+          - reference-id: AIR-SEC-010-03
+          - reference-id: AIR-OP-018
+          - reference-id: AIR-OP-020
+    state: Active

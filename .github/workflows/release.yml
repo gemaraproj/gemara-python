@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen
+      - name: Verify the tag matches the static version
+        run: |
+          # Defect 3: artifacts must never ship as 0.0.0, and the tag is the
+          # only thing that should ever disagree with pyproject.toml.
+          declared="$(uv run python -c 'import tomllib,pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          tagged="${GITHUB_REF_NAME#v}"
+          test "$declared" != "0.0.0" || { echo "::error::version is 0.0.0"; exit 1; }
+          test "$declared" = "$tagged" || {
+            echo "::error::tag $tagged does not match pyproject version $declared"; exit 1; }
+      - name: Run tests, failing if any is skipped
+        run: |
+          # Defect 1 was a suite that skipped 39 of 40 tests and stayed green;
+          # the release path must not be the one place that regresses on it.
+          set -o pipefail
+          uv run pytest -q | tee summary.txt
+          if grep -qE '[0-9]+ skipped' summary.txt; then
+            echo "::error::tests were skipped; the fixture corpus must always run"
+            exit 1
+          fi
+      - name: Regenerate models from the vendored schema
+        run: uv run poe generate
+      - name: Fail if the committed output drifted
+        run: |
+          git diff --exit-code src/gemara/v1/_models.py src/gemara/v1/_registry.py \
+            || { echo "::error::generated files are stale; run 'uv run poe generate'"; exit 1; }
+      - run: uv run poe lint
+      - run: uv run poe typecheck
+      - run: uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

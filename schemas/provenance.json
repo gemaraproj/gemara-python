@@ -1,0 +1,25 @@
+{
+  "commit": "9d36c253484d14922010252bfffe58bdcd49a144",
+  "cue_version": "v0.17.1",
+  "definition_count": 93,
+  "document_types": [
+    "AuditLog",
+    "CapabilityCatalog",
+    "ControlCatalog",
+    "EnforcementLog",
+    "EvaluationLog",
+    "GuidanceCatalog",
+    "Lexicon",
+    "MappingDocument",
+    "Policy",
+    "PrincipleCatalog",
+    "RiskCatalog",
+    "ThreatCatalog",
+    "VectorCatalog"
+  ],
+  "module": "github.com/gemaraproj/gemara",
+  "ref": "v1.5.0",
+  "repository": "https://github.com/gemaraproj/gemara",
+  "retrieved": "2026-09-05",
+  "schema_sha256": "dbd5aa73969648ae80a7f52d28136d4682fc30d3053a441ffe3de475af98647f"
+}

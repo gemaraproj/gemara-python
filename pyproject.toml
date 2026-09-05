@@ -1,0 +1,80 @@
+[build-system]
+requires = ["uv_build>=0.9.0,<0.15.0"]
+build-backend = "uv_build"
+
+[project]
+name = "py-gemara"
+version = "0.1.0"
+description = "Gemara v1 schema types as Pydantic v2 models"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.9"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6.0"]
+
+[project.urls]
+Homepage = "https://github.com/jpower432/py-gemara"
+Repository = "https://github.com/jpower432/py-gemara"
+Issues = "https://github.com/jpower432/py-gemara/issues"
+
+[dependency-groups]
+dev = [
+    "datamodel-code-generator==0.76.2",
+    "ruff==0.16.6",
+    "mypy>=2.3",
+    "poethepoet>=0.30",
+    "pytest>=8.0",
+    "pyyaml>=6.0",
+    "types-PyYAML>=6.0",
+]
+
+[tool.uv.build-backend]
+module-name = "gemara.v1"
+namespace = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# _models.py is generated; lint rules would only create churn against the drift gate.
+exclude = ["src/gemara/v1/_models.py"]
+
+[tool.ruff.lint.per-file-ignores]
+# The public API deliberately re-exports every model via a star import.
+"src/gemara/v1/__init__.py" = ["F403", "F405", "F822"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tools", "tests"]
+mypy_path = "src:tools:tests"
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["gemara.v1._models"]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["tests"]
+
+[tool.poe.tasks]
+test = "pytest"
+lint = "ruff check ."
+format = "ruff format ."
+typecheck = "mypy"
+generate = "python tools/generate.py"
+sync-schema = "python tools/sync_schema.py"

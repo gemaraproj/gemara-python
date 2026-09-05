@@ -1,0 +1,78 @@
+# AIGF Principles Catalog
+title: AI Governance Framework Principles
+metadata:
+  id: AIR-PRIN
+  type: PrincipleCatalog
+  gemara-version: "1.1.0"
+  description: >
+    Core principles underpinning the FINOS AI Governance Framework.
+    Each principle represents a foundational value that one or more
+    AIGF mitigations (guidelines) are designed to uphold.
+  version: 0.1.0
+  author:
+    id: finos
+    name: FINOS
+    type: Human
+  mapping-references:
+    - id: FINOS-AIR
+      title: AI Governance Framework
+      version: 0.1.0
+      url: "https://aigf.finos.org"
+      description: FINOS AI Governance Framework mitigations and risks
+
+groups:
+  - id: data-protection
+    title: Data Protection
+    description: >
+      Principles governing the handling, classification, and minimization
+      of sensitive data within AI systems.
+  - id: security-architecture
+    title: Security Architecture
+    description: >
+      Principles addressing layered defenses and resilience in AI
+      system design.
+  - id: governance
+    title: Governance
+    description: >
+      Principles ensuring transparency, accountability, and auditability
+      of AI data processing activities.
+
+principles:
+  - id: AIR-PRIN-001
+    title: Proactive Data Sanitization
+    group: data-protection
+    description: >
+      Apply filtering and anonymization techniques before data enters the
+      AI processing pipeline, vector databases, or any external service
+      endpoints.
+
+  - id: AIR-PRIN-002
+    title: Data Classification Awareness
+    group: data-protection
+    description: >
+      Understand and respect the sensitivity levels and access controls
+      associated with source data when determining appropriate filtering
+      strategies.
+
+  - id: AIR-PRIN-003
+    title: Principle of Least Exposure
+    group: data-protection
+    description: >
+      Only include data in AI systems that is necessary for the intended
+      business function, and ensure that even this data is appropriately
+      de-identified or masked when possible.
+
+  - id: AIR-PRIN-004
+    title: Defense in Depth
+    group: security-architecture
+    description: >
+      Implement multiple layers of filtering at data ingestion, during
+      processing, and at output generation to create robust protection
+      against data leakage.
+
+  - id: AIR-PRIN-005
+    title: Auditability and Transparency
+    group: governance
+    description: >
+      Maintain clear documentation and audit trails of what data filtering
+      processes have been applied and why.

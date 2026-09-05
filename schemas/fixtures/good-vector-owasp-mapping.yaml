@@ -1,0 +1,219 @@
+# AIGF Risk Vectors to OWASP LLM Top 10 Mapping Document
+title: AIGF Risk Vectors to OWASP Top 10 for LLMs 2025
+metadata:
+  id: AIR-OWASP-MAP-001
+  version: "0.1.0"
+  type: MappingDocument
+  gemara-version: "1.1.0"
+  description: >
+    Maps AIGF risk vectors to OWASP Top 10 for LLM Applications 2025
+    entries where a semantic relationship exists. Vectors without a
+    direct OWASP counterpart are recorded as no-match.
+  author:
+    id: finos
+    name: FINOS
+    type: Human
+  mapping-references:
+    - id: AIR-VEC
+      title: AI Governance Framework Risk Vectors
+      version: "0.1.0"
+      url: "https://aigf.finos.org/risks"
+    - id: OWASP-LLM-2025
+      title: OWASP Top 10 for LLM Applications 2025
+      version: "2025"
+      url: "https://genai.owasp.org/llm-top-10/"
+
+source-reference:
+  reference-id: AIR-VEC
+  entry-type: Vector
+target-reference:
+  reference-id: OWASP-LLM-2025
+  entry-type: Vector
+remarks: >
+  AIGF risk vectors mapped to OWASP Top 10 for LLM Applications 2025.
+  Mappings derived from OWASP references in AIGF risk frontmatter.
+
+mappings:
+  # Information Leakage vectors → LLM02 Sensitive Information Disclosure
+  - id: MAP-RC001-01-LLM02
+    source: AIR-RC-001-01
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM02:2025"
+        rationale: >
+          Model memorization of sensitive data from training or user
+          interactions directly contributes to sensitive information
+          disclosure.
+
+  - id: MAP-RC001-02-LLM02
+    source: AIR-RC-001-02
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM02:2025"
+        rationale: >
+          Prompt-based extraction techniques target memorized sensitive
+          information, a primary mechanism for LLM information disclosure.
+
+  - id: MAP-RC001-03-LLM02
+    source: AIR-RC-001-03
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM02:2025"
+        rationale: >
+          Inadequate provider data controls increase the likelihood
+          of sensitive information disclosure through hosted models.
+
+  - id: MAP-RC001-04-LLM02
+    source: AIR-RC-001-04
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM02:2025"
+        rationale: >
+          Deficient provider data handling practices around retention,
+          encryption, and deletion expose sensitive information.
+
+  - id: MAP-RC001-05-LLM02
+    source: AIR-RC-001-05
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM02:2025"
+        rationale: >
+          Fine-tuning with proprietary data embeds sensitive information
+          in model weights, creating persistent disclosure risk.
+
+  # Data Poisoning vectors → LLM04 Data and Model Poisoning
+  - id: MAP-SEC009-01-LLM04
+    source: AIR-SEC-009-01
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM04:2025"
+        rationale: >
+          Training data manipulation through label changes or crafted
+          data points is a direct form of data and model poisoning.
+
+  - id: MAP-SEC009-02-LLM04
+    source: AIR-SEC-009-02
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM04:2025"
+        rationale: >
+          Exploiting continuous learning pipelines to feed misleading
+          information is an ongoing form of data poisoning.
+
+  - id: MAP-SEC009-03-supplychain
+    source: AIR-SEC-009-03
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM03:2025"
+        rationale: >
+          Compromise of third-party data feeds represents a supply chain
+          vulnerability that introduces poisoned data into AI systems.
+      - entry-id: "LLM04:2025"
+        rationale: >
+          Compromise of third-party data feeds represents a supply chain
+          vulnerability that introduces poisoned data into AI systems.
+
+  - id: MAP-SEC009-04-poisoning
+    source: AIR-SEC-009-04
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM04:2025"
+        rationale: >
+          Deliberate bias introduction through data poisoning corrupts
+          model decision-making and produces discriminatory outputs.
+      - entry-id: "LLM05:2025"
+        rationale: >
+          Deliberate bias introduction through data poisoning corrupts
+          model decision-making and produces discriminatory outputs.
+
+  # Model Availability vectors → LLM10 Unbounded Consumption
+  - id: MAP-OP007-01-LLM10
+    source: AIR-OP-007-01
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM10:2025"
+        rationale: >
+          Denial of Wallet attacks exploit unbounded consumption through
+          excessive token usage, long prompts, or poorly throttled
+          agentic systems.
+
+  - id: MAP-OP007-02-NOMATCH
+    source: AIR-OP-007-02
+    relationship: no-match
+    remarks: >
+      TSP outage or degradation is an infrastructure availability
+      risk with no direct OWASP LLM Top 10 counterpart; it concerns
+      provider operational maturity rather than LLM-specific
+      vulnerabilities.
+
+  - id: MAP-OP007-03-LLM10
+    source: AIR-OP-007-03
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM10:2025"
+        rationale: >
+          VRAM exhaustion from configuration changes, caching, or memory
+          leaks is a resource exhaustion condition aligned with unbounded
+          consumption.
+
+  # Prompt Injection vectors → LLM01 Prompt Injection
+  - id: MAP-SEC010-01-LLM01
+    source: AIR-SEC-010-01
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM01:2025"
+        rationale: >
+          Direct prompt injection (jailbreaking) is the primary attack
+          pattern described in LLM01.
+
+  - id: MAP-SEC010-02-injection
+    source: AIR-SEC-010-02
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM01:2025"
+        rationale: >
+          Indirect prompt injection via poisoned third-party content
+          is covered in LLM01 and can hijack multi-agent decision-making
+          aligning with LLM06 excessive agency risks.
+      - entry-id: "LLM06:2025"
+        rationale: >
+          Indirect prompt injection via poisoned third-party content
+          is covered in LLM01 and can hijack multi-agent decision-making
+          aligning with LLM06 excessive agency risks.
+
+  - id: MAP-SEC010-03-probing
+    source: AIR-SEC-010-03
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM01:2025"
+        rationale: >
+          Model profiling and inversion use prompt injection techniques
+          to probe internal model structure and extract proprietary
+          system prompts and configurations.
+      - entry-id: "LLM07:2025"
+        rationale: >
+          Model profiling and inversion use prompt injection techniques
+          to probe internal model structure and extract proprietary
+          system prompts and configurations.
+
+  # Model Overreach → LLM06 Excessive Agency
+  - id: MAP-OP018-LLM06
+    source: AIR-OP-018
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM06:2025"
+        rationale: >
+          Model overreach and expanded use beyond validated scope aligns
+          with excessive agency where AI systems operate beyond intended
+          boundaries.
+
+  # Reputational Risk → LLM09 Misinformation
+  - id: MAP-OP020-LLM09
+    source: AIR-OP-020
+    relationship: relates-to
+    targets:
+      - entry-id: "LLM09:2025"
+        rationale: >
+          AI-generated offensive, misleading, or inaccurate outputs that
+          damage reputation are a manifestation of LLM misinformation
+          risks.

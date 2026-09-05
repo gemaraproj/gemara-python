@@ -1,0 +1,15 @@
+metadata:
+  id: audit-log-bad
+  type: AuditLog
+  gemara-version: "1.1.0"
+  version: "1.0.0"
+  description: "Invalid audit log: missing summary, criteria, and results"
+  author:
+    id: lead-auditor
+    name: "Jane Auditor"
+    type: Human
+
+target:
+  id: gemara-repo
+  name: "gemaraproj/gemara"
+  type: Software
