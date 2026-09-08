@@ -1,16 +1,12 @@
 version: 2
 
 updates:
-  # Actions are pinned to commit SHAs so that a compromised tag cannot silently
-  # change what runs in CI; dependabot is what keeps those pins from going stale.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
-    # Wait out the window in which a freshly published malicious release is
-    # most likely to be caught and yanked before we open a PR for it.
     cooldown:
       default-days: 7
     commit-message:
@@ -28,8 +24,6 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
-    # Wait out the window in which a freshly published malicious release is
-    # most likely to be caught and yanked before we open a PR for it.
     cooldown:
       default-days: 7
     commit-message:
