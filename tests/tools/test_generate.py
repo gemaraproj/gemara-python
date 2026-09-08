@@ -44,11 +44,17 @@ def _schema() -> dict[str, Any]:
     }
 
 
-def test_inject_metadata_titles_names_each_narrowed_metadata() -> None:
+def test_inject_metadata_titles_extracts_each_narrowed_metadata() -> None:
     schema = _schema()
     generate.inject_metadata_titles(schema)
     props = schema["$defs"]["ControlCatalog"]["properties"]
-    assert props["metadata"]["title"] == "ControlCatalogMetadata"
+    assert props["metadata"] == {"$ref": "#/$defs/ControlCatalogMetadata"}
+    assert schema["$defs"]["ControlCatalogMetadata"] == {
+        "allOf": [
+            {"$ref": "#/$defs/Metadata"},
+            {"properties": {"type": {"const": "ControlCatalog"}}, "type": "object"},
+        ]
+    }
 
 
 def test_inject_metadata_titles_returns_the_discriminator_map() -> None:
@@ -184,6 +190,17 @@ def test_render_models_excludes_denylisted_names_from_all() -> None:
     assert '"Type",' not in source
     assert "from gemara.v1._document import GemaraDocumentModel" in source
     assert "class Alpha(GemaraDocumentModel):" in source
+
+
+def test_render_models_makes_category_bases_document_models() -> None:
+    source = generate.render_models(
+        "from __future__ import annotations\n\nclass Catalog(BaseModel):\n    pass\n\n\n"
+        "class ControlCatalog(BaseModel):\n    pass\n",
+        ["Catalog", "ControlCatalog"],
+        ["ControlCatalog"],
+    )
+    assert "class Catalog(GemaraDocumentModel):" in source
+    assert "class ControlCatalog(Catalog):" in source
 
 
 def test_recover_array_allof_element_type_collapses_a_single_items_arm() -> None:

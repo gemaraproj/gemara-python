@@ -50,25 +50,38 @@ class GenerateError(RuntimeError):
 
 
 def inject_metadata_titles(schema: dict[str, Any]) -> dict[str, str]:
-    """Name each per-document metadata subschema and collect the discriminators.
+    """Extract typed metadata subclasses and collect document discriminators.
 
     A document type is a definition whose `metadata` property narrows `type` to
-    a `const`. Without a `title`, datamodel-codegen names these `Metadata1`…
-    `MetadataN`. The old generator instead replaced them with a generic $ref,
-    destroying the discriminator entirely -- that is defect 4, and it must never
-    be reintroduced.
+    a `const`. Make that narrow metadata schema an `allOf` extension of the
+    shared `Metadata` definition, so codegen emits a small typed subclass rather
+    than duplicating the common fields in every document model.
     """
     doc_types: dict[str, str] = {}
-    for name, definition in schema["$defs"].items():
+    definitions = schema["$defs"]
+    for name, definition in list(definitions.items()):
         if not isinstance(definition, dict):
             continue
-        metadata = (definition.get("properties") or {}).get("metadata")
+        properties = definition.get("properties") or {}
+        metadata = properties.get("metadata")
         if not isinstance(metadata, dict):
             continue
         type_schema = (metadata.get("properties") or {}).get("type")
         if not isinstance(type_schema, dict) or "const" not in type_schema:
             continue
-        metadata["title"] = f"{name}Metadata"
+        metadata_name = f"{name}Metadata"
+        narrow_metadata = metadata.copy()
+        narrow_metadata.pop("$ref", None)
+        narrow_metadata.pop("additionalProperties", None)
+        narrow_metadata.pop("description", None)
+        narrow_metadata.pop("title", None)
+        definitions[metadata_name] = {
+            "allOf": [
+                {"$ref": "#/$defs/Metadata"},
+                narrow_metadata,
+            ]
+        }
+        properties["metadata"] = {"$ref": f"#/$defs/{metadata_name}"}
         doc_types[str(type_schema["const"])] = name
     return doc_types
 
@@ -84,6 +97,17 @@ def check_document_types(schema: dict[str, Any], doc_types: dict[str, str]) -> N
         missing = ", ".join(sorted(declared - found)) or "none"
         extra = ", ".join(sorted(found - declared)) or "none"
         raise GenerateError(f"document types disagree with #ArtifactType (missing: {missing}; unexpected: {extra})")
+
+
+def prioritize_category_bases(schema: dict[str, Any]) -> None:
+    """Emit the shared Catalog and Log models before their concrete subclasses."""
+    definitions = schema.get("$defs")
+    if not isinstance(definitions, dict):
+        raise GenerateError("schema has no $defs")
+    missing = {"Catalog", "Log"} - definitions.keys()
+    if missing:
+        raise GenerateError(f"schema has no category base definitions: {', '.join(sorted(missing))}")
+    schema["$defs"] = {name: definitions[name] for name in ("Catalog", "Log")} | definitions
 
 
 def fold_hidden_definitions(schema: dict[str, Any]) -> int:
@@ -265,12 +289,19 @@ def render_models(body: str, model_names: list[str], document_models: list[str])
     future_import = "from __future__ import annotations\n"
     if body.count(future_import) != 1:
         raise GenerateError("generated models have an unexpected future-import layout")
-    body = body.replace(future_import, f"{future_import}\nfrom gemara.v1._document import GemaraDocumentModel\n", 1)
+    body = body.replace(
+        future_import,
+        f"{future_import}\nfrom gemara.v1._document import GemaraDocumentModel\n",
+        1,
+    )
+    for base in ("Catalog", "Log"):
+        body = body.replace(f"class {base}(BaseModel):", f"class {base}(GemaraDocumentModel):")
     for model in document_models:
         declaration = f"class {model}(BaseModel):"
         if body.count(declaration) != 1:
             raise GenerateError(f"generated models have an unexpected declaration for document model {model!r}")
-        body = body.replace(declaration, f"class {model}(GemaraDocumentModel):")
+        base = "Catalog" if model.endswith("Catalog") else "Log" if model.endswith("Log") else "GemaraDocumentModel"
+        body = body.replace(declaration, f"class {model}({base}):")
     exports = "\n".join(f'    "{name}",' for name in sorted(model_names) if name not in DENYLISTED_MODEL_NAMES)
     return f"{GENERATED_MARKER}\n{body.rstrip()}\n\n\n__all__ = [\n{exports}\n]\n"
 
@@ -337,6 +368,7 @@ def main() -> int:
 
     doc_types = inject_metadata_titles(schema)
     check_document_types(schema, doc_types)
+    prioritize_category_bases(schema)
     print(f"  {len(doc_types)} document types match #ArtifactType")
 
     folded = fold_hidden_definitions(schema)

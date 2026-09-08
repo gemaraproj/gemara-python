@@ -48,26 +48,6 @@ class ArtifactType(Enum):
     audit_log = "AuditLog"
 
 
-class Type(Enum):
-    """
-    type identifies the kind of Gemara artifact for unambiguous parsing
-    """
-
-    capability_catalog = "CapabilityCatalog"
-    control_catalog = "ControlCatalog"
-    guidance_catalog = "GuidanceCatalog"
-    threat_catalog = "ThreatCatalog"
-    risk_catalog = "RiskCatalog"
-    policy = "Policy"
-    mapping_document = "MappingDocument"
-    lexicon = "Lexicon"
-    evaluation_log = "EvaluationLog"
-    enforcement_log = "EnforcementLog"
-    vector_catalog = "VectorCatalog"
-    principle_catalog = "PrincipleCatalog"
-    audit_log = "AuditLog"
-
-
 class Capability(BaseModel):
     """Capability describes a system capability such as a feature, component or object."""
 
@@ -587,6 +567,26 @@ class ReferenceId(RootModel[str]):
     """reference-id is the id for a MappingReference entry in the artifact's metadata"""
 
 
+class Type(Enum):
+    """
+    type identifies the kind of Gemara artifact for unambiguous parsing
+    """
+
+    capability_catalog = "CapabilityCatalog"
+    control_catalog = "ControlCatalog"
+    guidance_catalog = "GuidanceCatalog"
+    threat_catalog = "ThreatCatalog"
+    risk_catalog = "RiskCatalog"
+    policy = "Policy"
+    mapping_document = "MappingDocument"
+    lexicon = "Lexicon"
+    evaluation_log = "EvaluationLog"
+    enforcement_log = "EnforcementLog"
+    vector_catalog = "VectorCatalog"
+    principle_catalog = "PrincipleCatalog"
+    audit_log = "AuditLog"
+
+
 class AcceptedRisk(BaseModel):
     """
     AcceptedRisk documents a risk the organization has chosen to accept,
@@ -1103,36 +1103,6 @@ class AssessmentPlan(BaseModel):
     requirement_id: Annotated[str, Field(alias="requirement-id")]
 
 
-class AuditLogMetadata(BaseModel):
-    """metadata provides detailed data about this log"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["AuditLog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
 class AuditResult(BaseModel):
     """AuditResult records a single result with supporting evidence and recommendations."""
 
@@ -1153,344 +1123,6 @@ class AuditResult(BaseModel):
     """title describes this result at a glance"""
     type: ResultType
     """type classifies the nature of this result"""
-
-
-class CapabilityCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["CapabilityCatalog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class CapabilityCatalog(GemaraDocumentModel):
-    """CapabilityCatalog describes a collection of system capabilities"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
-    """groups contains a list of groups that can be referenced by entries in this catalog"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[CapabilityCatalogMetadata, Field(title="CapabilityCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    capabilities: Annotated[list[Capability] | None, Field(min_length=1)] = None
-    """capabilities is a list of capabilities defined by this catalog"""
-
-
-class ControlCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["ControlCatalog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class ControlCatalog(GemaraDocumentModel):
-    """ControlCatalog describes a set of related controls and relevant metadata"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
-    """groups contains a list of groups that can be referenced by entries in this catalog"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[ControlCatalogMetadata, Field(title="ControlCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    controls: Annotated[list[Control] | None, Field(min_length=1)] = None
-    """controls is a list of unique controls defined by this catalog"""
-
-
-class EnforcementLogMetadata(BaseModel):
-    """metadata provides detailed data about this log"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["EnforcementLog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class EnforcementLog(GemaraDocumentModel):
-    """EnforcementLog records actions taken in response to noncompliance findings from Layer 5 evaluations."""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    metadata: Annotated[EnforcementLogMetadata, Field(title="EnforcementLogMetadata")]
-    """metadata provides detailed data about this log"""
-    target: Resource
-    """target identifies the resource being evaluated"""
-    actions: Annotated[list[ActionResult], Field(min_length=1)]
-    """actions is the list of enforcement actions performed"""
-    disposition: Disposition
-    """disposition is the aggregate enforcement disposition across all actions in this log"""
-
-
-class EvaluationLogMetadata(BaseModel):
-    """metadata provides detailed data about this log"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["EvaluationLog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class EvaluationLog(GemaraDocumentModel):
-    """EvaluationLog contains the results of evaluating a set of Layer 2 controls."""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    metadata: Annotated[EvaluationLogMetadata, Field(title="EvaluationLogMetadata")]
-    """metadata provides detailed data about this log"""
-    target: Resource
-    """target identifies the resource being evaluated"""
-    evaluations: Annotated[list[ControlEvaluation], Field(min_length=1)]
-    result: Result
-    """result is the aggregate outcome across all evaluations in this log"""
-
-
-class GuidanceCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["GuidanceCatalog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class GuidanceCatalog(GemaraDocumentModel):
-    """GuidanceCatalog represents a concerted documentation effort to help bring about an optimal future without foreknowledge of the implementation details"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
-    """groups contains a list of groups that can be referenced by entries in this catalog"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[GuidanceCatalogMetadata, Field(title="GuidanceCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    exemptions: Annotated[list[Exemption] | None, Field(min_length=1)] = None
-    """exemptions provides information about situations where this guidance is not applicable"""
-    front_matter: Annotated[str | None, Field(alias="front-matter")] = None
-    """front-matter provides introductory text for the document to be used during rendering"""
-    guidelines: Annotated[list[Guideline] | None, Field(min_length=1)] = None
-    """guidelines is a list of unique guidelines defined by this catalog"""
-    type: GuidanceType
-    """type categorizes this document based on the intent of its contents"""
-
-
-class LexiconMetadata(BaseModel):
-    """metadata provides detailed data about this document"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["Lexicon"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class Lexicon(GemaraDocumentModel):
-    """Lexicon is a controlled vocabulary or glossary artifact referenced by Metadata.lexicon"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    metadata: Annotated[LexiconMetadata, Field(title="LexiconMetadata")]
-    """metadata provides detailed data about this document"""
-    terms: Annotated[list[LexiconTerm], Field(min_length=1)]
-    """terms is one or more defined entries for linking and rendering"""
-    title: str
-    """title describes the purpose of this lexicon at a glance"""
-
-
-class MappingDocumentMetadata(BaseModel):
-    """metadata provides detailed data about this document"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference], Field(alias="mapping-references", min_length=1)]
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["MappingDocument"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class MappingDocument(GemaraDocumentModel):
-    """MappingDocument captures the user's intent for how entries in a source artifact relate to entries in a target artifact"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    mappings: Annotated[list[Mapping], Field(min_length=1)]
-    """mappings is one or more atomic relationships between entries in the referenced artifacts"""
-    metadata: Annotated[MappingDocumentMetadata, Field(title="MappingDocumentMetadata")]
-    """metadata provides detailed data about this document"""
-    remarks: str | None = None
-    """remarks is prose regarding this mapping document"""
-    source_reference: Annotated[TypedMapping, Field(alias="source-reference")]
-    """source-reference identifies the artifact being mapped from; must match a mapping-reference id"""
-    target_reference: Annotated[TypedMapping, Field(alias="target-reference")]
-    """target-reference identifies the artifact being mapped to; must match a mapping-reference id"""
-    title: str
-    """title describes the purpose of this mapping document at a glance"""
 
 
 class Metadata(BaseModel):
@@ -1523,138 +1155,6 @@ class Metadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class PolicyMetadata(BaseModel):
-    """Metadata represents common metadata fields shared across all layers"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["Policy"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class PrincipleCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["PrincipleCatalog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class PrincipleCatalog(GemaraDocumentModel):
-    """PrincipleCatalog describes a set of related principles and relevant metadata"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
-    """groups contains a list of groups that can be referenced by entries in this catalog"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[PrincipleCatalogMetadata, Field(title="PrincipleCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    principles: Annotated[list[Principle] | None, Field(min_length=1)] = None
-    """principles is a list of unique principles defined by this catalog"""
-
-
-class RiskCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
-    type: Literal["RiskCatalog"]
-    """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
-
-
-class RiskCatalog(GemaraDocumentModel):
-    """
-    A RiskCatalog is a structured collection of documented risks that may affect an organization,
-    system, or service. It provides a centralized reference for risks that can be mapped to threats
-    and referenced by policies when documenting how those risks are mitigated or accepted.
-    """
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group | RiskCategory] | None, Field(min_length=1)] = None
-    """groups narrows the base groups to risk categories with appetite and severity boundaries"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[RiskCatalogMetadata, Field(title="RiskCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    risks: Annotated[list[Risk] | None, Field(min_length=1)] = None
-    """risks is a list of risks defined by this catalog"""
-
-
 class Threat(BaseModel):
     """Threat describes a specifically-scoped opportunity for a negative impact to the organization"""
 
@@ -1677,86 +1177,113 @@ class Threat(BaseModel):
     """vectors documents the relationship between this threat and one or more vectors"""
 
 
-class ThreatCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
+class AuditLogMetadata(Metadata):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
+    type: Literal["AuditLog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class CapabilityCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["CapabilityCatalog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class ControlCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["ControlCatalog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class EnforcementLogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["EnforcementLog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class EvaluationLogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["EvaluationLog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class GuidanceCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["GuidanceCatalog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class LexiconMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["Lexicon"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class MappingDocumentMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    mapping_references: Annotated[list[MappingReference], Field(alias="mapping-references", min_length=1)]
     """mapping-references is a list of external documents referenced within this artifact"""
+    type: Literal["MappingDocument"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class PolicyMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["Policy"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class PrincipleCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["PrincipleCatalog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class RiskCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    type: Literal["RiskCatalog"]
+    """type identifies the kind of Gemara artifact for unambiguous parsing"""
+
+
+class ThreatCatalogMetadata(Metadata):
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
     type: Literal["ThreatCatalog"]
     """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
 
 
-class ThreatCatalog(GemaraDocumentModel):
-    """ThreatCatalog describes a set of topically-associated threats"""
-
+class VectorCatalogMetadata(Metadata):
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    extends: list[ArtifactMapping] | None = None
-    """extends references catalogs that this catalog builds upon"""
-    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
-    """groups contains a list of groups that can be referenced by entries in this catalog"""
-    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[ThreatCatalogMetadata, Field(title="ThreatCatalogMetadata")]
-    """metadata provides detailed data about this catalog"""
-    title: str
-    """title describes the purpose of this catalog at a glance"""
-    threats: Annotated[list[Threat] | None, Field(min_length=1)] = None
-    """threats is a list of threats defined by this catalog"""
-
-
-class VectorCatalogMetadata(BaseModel):
-    """metadata provides detailed data about this catalog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability_groups: Annotated[list[Group] | None, Field(alias="applicability-groups", min_length=1)] = None
-    """applicability-groups is a list of groups used to classify within this artifact to specify scope"""
-    author: Actor
-    """author is the person or group primarily responsible for this artifact"""
-    date: AwareDatetime | None = None
-    """date is the publication or effective date of this artifact"""
-    description: str
-    """description provides a high-level summary of the artifact's purpose and scope"""
-    draft: bool | None = None
-    """draft indicates whether this artifact is a pre-release version; open to modification"""
-    gemara_version: Annotated[str, Field(alias="gemara-version")]
-    """gemara-version declares which version of the Gemara specification this artifact conforms to"""
-    id: str
-    """id allows this entry to be referenced by other elements"""
-    lexicon: ArtifactMapping | None = None
-    """lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"""
-    mapping_references: Annotated[list[MappingReference] | None, Field(alias="mapping-references", min_length=1)] = None
-    """mapping-references is a list of external documents referenced within this artifact"""
     type: Literal["VectorCatalog"]
     """type identifies the kind of Gemara artifact for unambiguous parsing"""
-    version: str | None = None
-    """version is the version identifier of this artifact"""
 
 
-class VectorCatalog(GemaraDocumentModel):
+class Catalog(GemaraDocumentModel):
     """Catalog describes a set of topically-associated entries"""
 
     model_config = ConfigDict(
@@ -1767,12 +1294,22 @@ class VectorCatalog(GemaraDocumentModel):
     groups: Annotated[list[Group] | None, Field(min_length=1)] = None
     """groups contains a list of groups that can be referenced by entries in this catalog"""
     imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Annotated[VectorCatalogMetadata, Field(title="VectorCatalogMetadata")]
+    metadata: Metadata
     """metadata provides detailed data about this catalog"""
     title: str
     """title describes the purpose of this catalog at a glance"""
-    vectors: Annotated[list[Vector] | None, Field(min_length=1)] = None
-    """vectors is a list of attack vectors documented in this catalog"""
+
+
+class Log(GemaraDocumentModel):
+    """Log describes a set of recorded entries from a measurement activity"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    metadata: Metadata
+    """metadata provides detailed data about this log"""
+    target: Resource
+    """target identifies the resource being evaluated"""
 
 
 class AcceptedMethod(BaseModel):
@@ -1803,13 +1340,13 @@ class Adherence(BaseModel):
     non_compliance: Annotated[str | None, Field(alias="non-compliance")] = None
 
 
-class AuditLog(GemaraDocumentModel):
+class AuditLog(Log):
     """AuditLog records results from an audit performed against a target resource"""
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    metadata: Annotated[AuditLogMetadata, Field(title="AuditLogMetadata")]
+    metadata: AuditLogMetadata
     """metadata provides detailed data about this log"""
     target: Resource
     """target identifies the resource being evaluated"""
@@ -1823,8 +1360,8 @@ class AuditLog(GemaraDocumentModel):
     """summary provides the high-level conclusion"""
 
 
-class Catalog(BaseModel):
-    """Catalog describes a set of topically-associated entries"""
+class CapabilityCatalog(Catalog):
+    """CapabilityCatalog describes a collection of system capabilities"""
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -1834,22 +1371,119 @@ class Catalog(BaseModel):
     groups: Annotated[list[Group] | None, Field(min_length=1)] = None
     """groups contains a list of groups that can be referenced by entries in this catalog"""
     imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
-    metadata: Metadata
+    metadata: CapabilityCatalogMetadata
     """metadata provides detailed data about this catalog"""
     title: str
     """title describes the purpose of this catalog at a glance"""
+    capabilities: Annotated[list[Capability] | None, Field(min_length=1)] = None
+    """capabilities is a list of capabilities defined by this catalog"""
 
 
-class Log(BaseModel):
-    """Log describes a set of recorded entries from a measurement activity"""
+class ControlCatalog(Catalog):
+    """ControlCatalog describes a set of related controls and relevant metadata"""
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    metadata: Metadata
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
+    """groups contains a list of groups that can be referenced by entries in this catalog"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: ControlCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    controls: Annotated[list[Control] | None, Field(min_length=1)] = None
+    """controls is a list of unique controls defined by this catalog"""
+
+
+class EnforcementLog(Log):
+    """EnforcementLog records actions taken in response to noncompliance findings from Layer 5 evaluations."""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    metadata: EnforcementLogMetadata
     """metadata provides detailed data about this log"""
     target: Resource
     """target identifies the resource being evaluated"""
+    actions: Annotated[list[ActionResult], Field(min_length=1)]
+    """actions is the list of enforcement actions performed"""
+    disposition: Disposition
+    """disposition is the aggregate enforcement disposition across all actions in this log"""
+
+
+class EvaluationLog(Log):
+    """EvaluationLog contains the results of evaluating a set of Layer 2 controls."""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    metadata: EvaluationLogMetadata
+    """metadata provides detailed data about this log"""
+    target: Resource
+    """target identifies the resource being evaluated"""
+    evaluations: Annotated[list[ControlEvaluation], Field(min_length=1)]
+    result: Result
+    """result is the aggregate outcome across all evaluations in this log"""
+
+
+class GuidanceCatalog(Catalog):
+    """GuidanceCatalog represents a concerted documentation effort to help bring about an optimal future without foreknowledge of the implementation details"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
+    """groups contains a list of groups that can be referenced by entries in this catalog"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: GuidanceCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    exemptions: Annotated[list[Exemption] | None, Field(min_length=1)] = None
+    """exemptions provides information about situations where this guidance is not applicable"""
+    front_matter: Annotated[str | None, Field(alias="front-matter")] = None
+    """front-matter provides introductory text for the document to be used during rendering"""
+    guidelines: Annotated[list[Guideline] | None, Field(min_length=1)] = None
+    """guidelines is a list of unique guidelines defined by this catalog"""
+    type: GuidanceType
+    """type categorizes this document based on the intent of its contents"""
+
+
+class Lexicon(GemaraDocumentModel):
+    """Lexicon is a controlled vocabulary or glossary artifact referenced by Metadata.lexicon"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    metadata: LexiconMetadata
+    terms: Annotated[list[LexiconTerm], Field(min_length=1)]
+    """terms is one or more defined entries for linking and rendering"""
+    title: str
+    """title describes the purpose of this lexicon at a glance"""
+
+
+class MappingDocument(GemaraDocumentModel):
+    """MappingDocument captures the user's intent for how entries in a source artifact relate to entries in a target artifact"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    mappings: Annotated[list[Mapping], Field(min_length=1)]
+    """mappings is one or more atomic relationships between entries in the referenced artifacts"""
+    metadata: MappingDocumentMetadata
+    remarks: str | None = None
+    """remarks is prose regarding this mapping document"""
+    source_reference: Annotated[TypedMapping, Field(alias="source-reference")]
+    """source-reference identifies the artifact being mapped from; must match a mapping-reference id"""
+    target_reference: Annotated[TypedMapping, Field(alias="target-reference")]
+    """target-reference identifies the artifact being mapped to; must match a mapping-reference id"""
+    title: str
+    """title describes the purpose of this mapping document at a glance"""
 
 
 class Policy(GemaraDocumentModel):
@@ -1862,11 +1496,90 @@ class Policy(GemaraDocumentModel):
     contacts: RACI
     implementation_plan: Annotated[ImplementationPlan | None, Field(alias="implementation-plan")] = None
     imports: Imports | None = None
-    metadata: Annotated[PolicyMetadata, Field(title="PolicyMetadata")]
-    """Metadata represents common metadata fields shared across all layers"""
+    metadata: PolicyMetadata
     risks: Risks | None = None
     scope: Scope | None = None
     title: str
+
+
+class PrincipleCatalog(Catalog):
+    """PrincipleCatalog describes a set of related principles and relevant metadata"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
+    """groups contains a list of groups that can be referenced by entries in this catalog"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: PrincipleCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    principles: Annotated[list[Principle] | None, Field(min_length=1)] = None
+    """principles is a list of unique principles defined by this catalog"""
+
+
+class RiskCatalog(Catalog):
+    """
+    A RiskCatalog is a structured collection of documented risks that may affect an organization,
+    system, or service. It provides a centralized reference for risks that can be mapped to threats
+    and referenced by policies when documenting how those risks are mitigated or accepted.
+    """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group | RiskCategory] | None, Field(min_length=1)] = None
+    """groups narrows the base groups to risk categories with appetite and severity boundaries"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: RiskCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    risks: Annotated[list[Risk] | None, Field(min_length=1)] = None
+    """risks is a list of risks defined by this catalog"""
+
+
+class ThreatCatalog(Catalog):
+    """ThreatCatalog describes a set of topically-associated threats"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
+    """groups contains a list of groups that can be referenced by entries in this catalog"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: ThreatCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    threats: Annotated[list[Threat] | None, Field(min_length=1)] = None
+    """threats is a list of threats defined by this catalog"""
+
+
+class VectorCatalog(Catalog):
+    """Catalog describes a set of topically-associated entries"""
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    extends: list[ArtifactMapping] | None = None
+    """extends references catalogs that this catalog builds upon"""
+    groups: Annotated[list[Group] | None, Field(min_length=1)] = None
+    """groups contains a list of groups that can be referenced by entries in this catalog"""
+    imports: Annotated[list[MultiEntryMapping] | None, Field(min_length=1)] = None
+    metadata: VectorCatalogMetadata
+    """metadata provides detailed data about this catalog"""
+    title: str
+    """title describes the purpose of this catalog at a glance"""
+    vectors: Annotated[list[Vector] | None, Field(min_length=1)] = None
+    """vectors is a list of attack vectors documented in this catalog"""
 
 
 __all__ = [

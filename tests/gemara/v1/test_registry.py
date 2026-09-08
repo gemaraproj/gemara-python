@@ -8,7 +8,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from gemara.v1 import DOCUMENT_TYPES, GemaraDocument
+from gemara.v1 import DOCUMENT_TYPES, Catalog, GemaraDocument, Log, Metadata
+from gemara.v1._document import GemaraDocumentModel
 
 SCHEMA_DIR = Path(__file__).resolve().parents[3] / "schemas"
 
@@ -26,6 +27,7 @@ def test_registry_has_thirteen_document_types() -> None:
 def test_every_registry_entry_is_a_model() -> None:
     for name, model in DOCUMENT_TYPES.items():
         assert issubclass(model, BaseModel), name
+        assert issubclass(model, GemaraDocumentModel), name
 
 
 def test_every_model_narrows_its_metadata_type() -> None:
@@ -34,6 +36,7 @@ def test_every_model_narrows_its_metadata_type() -> None:
         metadata = model.model_fields["metadata"].annotation
         assert metadata is not None
         assert metadata.__name__ == f"{name}Metadata", name
+        assert issubclass(metadata, Metadata), name
 
 
 def test_gemara_document_alias_matches_document_types() -> None:
@@ -41,3 +44,15 @@ def test_gemara_document_alias_matches_document_types() -> None:
     members = set(typing.get_args(GemaraDocument))
     assert members == set(DOCUMENT_TYPES.values())
     assert len(members) == 13
+
+
+def test_catalog_models_share_the_catalog_runtime_base() -> None:
+    assert "imports" in Catalog.model_fields
+    for name, model in DOCUMENT_TYPES.items():
+        assert issubclass(model, Catalog) is name.endswith("Catalog")
+
+
+def test_log_models_share_the_log_runtime_base() -> None:
+    assert "target" in Log.model_fields
+    for name, model in DOCUMENT_TYPES.items():
+        assert issubclass(model, Log) is name.endswith("Log")
