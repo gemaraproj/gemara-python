@@ -1,4 +1,4 @@
-"""Shared test helpers, importable by name (unlike `conftest`)."""
+"""Shared test helpers, importable by name"""
 
 from __future__ import annotations
 

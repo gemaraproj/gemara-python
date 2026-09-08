@@ -1,19 +1,20 @@
 """Read a Gemara document and dispatch it to the right model.
-
-Hand-written; passes `mypy --strict`.
 """
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import IO, Any, cast
+from typing import IO, Any, TypeVar, cast
 
 import yaml
+from pydantic import BaseModel
 
 from gemara.v1._registry import DOCUMENT_TYPES, GemaraDocument
 
 __all__ = ["GemaraError", "UnknownDocumentTypeError", "load", "loads"]
+
+T = TypeVar("T", bound=BaseModel)
 
 
 class GemaraError(Exception):
@@ -49,6 +50,22 @@ def _parse(text: str) -> Any:
     except yaml.YAMLError as exc:
         raise GemaraError(f"could not parse the document as YAML or JSON: {exc}") from exc
     return parsed
+
+
+def _loads_as(model: type[T], text: str | bytes | bytearray | memoryview) -> T:
+    """Parse text and validate it as one explicitly selected document model."""
+    if isinstance(text, str):
+        decoded = text
+    else:
+        decoded = _decode(text)
+    return model.model_validate(_parse(decoded))
+
+
+def _read_source(source: str | os.PathLike[str] | IO[str] | IO[bytes]) -> str | bytes:
+    """Read a path or an already-open text or binary file."""
+    if isinstance(source, (str, os.PathLike)):
+        return Path(source).read_bytes()
+    return source.read()
 
 
 def _dispatch(raw: Any) -> GemaraDocument:
@@ -102,8 +119,7 @@ def load(source: str | os.PathLike[str] | IO[str] | IO[bytes]) -> GemaraDocument
     (e.g. the result of `open(path)`). Like `json.load`, the file may be opened
     in either text or binary mode; binary content is decoded as UTF-8.
 
-    Raises the same exceptions as `loads`, to which it delegates.
+    Raises the parsing and validation exceptions documented by `loads`, plus
+    filesystem or stream I/O exceptions from reading `source`.
     """
-    if isinstance(source, (str, os.PathLike)):
-        return loads(Path(source).read_bytes())
-    return loads(source.read())
+    return loads(_read_source(source))

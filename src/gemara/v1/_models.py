@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from gemara.v1._document import GemaraDocumentModel
+
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -580,24 +582,6 @@ class Vector(BaseModel):
     """title describes the vector"""
 
 
-class FieldMappingStrict(BaseModel):
-    """_MappingStrict layers the "targets required when not no-match" rule on top of #Mapping"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    id: str
-    """id allows this mapping to be referenced by other elements"""
-    relationship: RelationshipType
-    """relationship describes the nature of the mapping between source and all targets"""
-    remarks: str | None = None
-    """remarks is general prose regarding this mapping"""
-    source: str
-    """source identifies the entry being mapped from by its entry-id"""
-    targets: Annotated[list[MappingTarget] | None, Field(min_length=1)] = None
-    """targets identifies the entries being mapped to; absent when relationship is no-match"""
-
-
 class ReferenceId(RootModel[str]):
     root: str
     """reference-id is the id for a MappingReference entry in the artifact's metadata"""
@@ -996,43 +980,6 @@ class Risks(BaseModel):
     """Mitigated risks only need reference-id and risk-id (no justification required)"""
 
 
-class FieldAssessmentLogStrict(BaseModel):
-    """_AssessmentLogStrict layers the "start required unless unexecuted" rule on top of #AssessmentLog"""
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-    applicability: Annotated[list[str], Field(min_length=1)]
-    """Applicability is elevated from the Layer 2 Assessment Requirement to aid in execution and reporting."""
-    confidence_level: Annotated[ConfidenceLevel | None, Field(alias="confidence-level")] = None
-    """ConfidenceLevel indicates the evaluator's confidence level in this specific assessment result."""
-    description: str
-    """Description provides a summary of the assessment procedure."""
-    end: AwareDatetime | None = None
-    """End is the timestamp when the assessment concluded."""
-    evidence: Annotated[list[Evidence] | None, Field(min_length=1)] = None
-    """Evidence records the raw data cited to support this assessment's opinion."""
-    message: str
-    """Message provides additional context about the assessment result."""
-    plan: EntryMapping | None = None
-    """Plan maps to the policy assessment plan being executed."""
-    recommendation: str | None = None
-    """Recommendation provides guidance on how to address a failed assessment."""
-    requirement: EntryMapping
-    """Requirement should map to the assessment requirement for this assessment."""
-    result: Result
-    """Result is the overall outcome of the assessment procedure, matching the result of the last step that was run."""
-    start: AwareDatetime | None = None
-    """
-    Start is the timestamp when the assessment began.
-    Assessments that never executed have no start time to record.
-    """
-    steps: Annotated[list[str], Field(min_length=1)]
-    """Steps are sequential actions taken as part of the assessment, which may halt the assessment if a failure occurs."""
-    steps_executed: Annotated[int | None, Field(alias="steps-executed")] = None
-    """Steps-executed is the number of steps that were executed as part of the assessment."""
-
-
 class ActionResult(BaseModel):
     """ActionResult captures a performed enforcement action."""
 
@@ -1238,7 +1185,7 @@ class CapabilityCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class CapabilityCatalog(BaseModel):
+class CapabilityCatalog(GemaraDocumentModel):
     """CapabilityCatalog describes a collection of system capabilities"""
 
     model_config = ConfigDict(
@@ -1287,7 +1234,7 @@ class ControlCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class ControlCatalog(BaseModel):
+class ControlCatalog(GemaraDocumentModel):
     """ControlCatalog describes a set of related controls and relevant metadata"""
 
     model_config = ConfigDict(
@@ -1336,7 +1283,7 @@ class EnforcementLogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class EnforcementLog(BaseModel):
+class EnforcementLog(GemaraDocumentModel):
     """EnforcementLog records actions taken in response to noncompliance findings from Layer 5 evaluations."""
 
     model_config = ConfigDict(
@@ -1382,7 +1329,7 @@ class EvaluationLogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class EvaluationLog(BaseModel):
+class EvaluationLog(GemaraDocumentModel):
     """EvaluationLog contains the results of evaluating a set of Layer 2 controls."""
 
     model_config = ConfigDict(
@@ -1427,7 +1374,7 @@ class GuidanceCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class GuidanceCatalog(BaseModel):
+class GuidanceCatalog(GemaraDocumentModel):
     """GuidanceCatalog represents a concerted documentation effort to help bring about an optimal future without foreknowledge of the implementation details"""
 
     model_config = ConfigDict(
@@ -1482,7 +1429,7 @@ class LexiconMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class Lexicon(BaseModel):
+class Lexicon(GemaraDocumentModel):
     """Lexicon is a controlled vocabulary or glossary artifact referenced by Metadata.lexicon"""
 
     model_config = ConfigDict(
@@ -1526,13 +1473,13 @@ class MappingDocumentMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class MappingDocument(BaseModel):
+class MappingDocument(GemaraDocumentModel):
     """MappingDocument captures the user's intent for how entries in a source artifact relate to entries in a target artifact"""
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    mappings: Annotated[list[FieldMappingStrict], Field(min_length=1)]
+    mappings: Annotated[list[Mapping], Field(min_length=1)]
     """mappings is one or more atomic relationships between entries in the referenced artifacts"""
     metadata: Annotated[MappingDocumentMetadata, Field(title="MappingDocumentMetadata")]
     """metadata provides detailed data about this document"""
@@ -1636,7 +1583,7 @@ class PrincipleCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class PrincipleCatalog(BaseModel):
+class PrincipleCatalog(GemaraDocumentModel):
     """PrincipleCatalog describes a set of related principles and relevant metadata"""
 
     model_config = ConfigDict(
@@ -1685,7 +1632,7 @@ class RiskCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class RiskCatalog(BaseModel):
+class RiskCatalog(GemaraDocumentModel):
     """
     A RiskCatalog is a structured collection of documented risks that may affect an organization,
     system, or service. It provides a centralized reference for risks that can be mapped to threats
@@ -1760,7 +1707,7 @@ class ThreatCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class ThreatCatalog(BaseModel):
+class ThreatCatalog(GemaraDocumentModel):
     """ThreatCatalog describes a set of topically-associated threats"""
 
     model_config = ConfigDict(
@@ -1809,7 +1756,7 @@ class VectorCatalogMetadata(BaseModel):
     """version is the version identifier of this artifact"""
 
 
-class VectorCatalog(BaseModel):
+class VectorCatalog(GemaraDocumentModel):
     """Catalog describes a set of topically-associated entries"""
 
     model_config = ConfigDict(
@@ -1856,7 +1803,7 @@ class Adherence(BaseModel):
     non_compliance: Annotated[str | None, Field(alias="non-compliance")] = None
 
 
-class AuditLog(BaseModel):
+class AuditLog(GemaraDocumentModel):
     """AuditLog records results from an audit performed against a target resource"""
 
     model_config = ConfigDict(
@@ -1905,7 +1852,7 @@ class Log(BaseModel):
     """target identifies the resource being evaluated"""
 
 
-class Policy(BaseModel):
+class Policy(GemaraDocumentModel):
     """Policy represents a policy document with metadata, contacts, scope, imports, implementation plan, risks, and adherence requirements."""
 
     model_config = ConfigDict(
@@ -1967,7 +1914,6 @@ __all__ = [
     "Evidence",
     "EvidenceMapping",
     "Exemption",
-    "FieldMappingStrict",
     "Group",
     "GuidanceCatalog",
     "GuidanceCatalogMetadata",

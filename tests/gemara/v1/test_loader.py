@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -14,12 +15,13 @@ from gemara.v1 import (
     SCHEMA_VERSION,
     ControlCatalog,
     GemaraError,
+    GuidanceCatalog,
     UnknownDocumentTypeError,
     load,
     loads,
 )
 
-CATALOG = {
+CATALOG: dict[str, Any] = {
     "metadata": {
         "id": "example",
         "author": {"id": "author-1", "name": "Example Author", "type": "Human"},
@@ -79,6 +81,26 @@ def test_load_reads_an_open_file_object(tmp_path: Path) -> None:
     path.write_text(json.dumps(CATALOG), encoding="utf-8")
     with path.open(encoding="utf-8") as f:
         assert isinstance(load(f), ControlCatalog)
+
+
+def test_document_model_from_file_returns_its_declared_type(tmp_path: Path) -> None:
+    path = tmp_path / "catalog.yaml"
+    path.write_text(json.dumps(CATALOG), encoding="utf-8")
+
+    catalog = ControlCatalog.from_file(path)
+
+    assert isinstance(catalog, ControlCatalog)
+
+
+def test_document_model_from_text_returns_its_declared_type() -> None:
+    catalog = ControlCatalog.from_text(json.dumps(CATALOG))
+
+    assert isinstance(catalog, ControlCatalog)
+
+
+def test_document_model_typed_loading_rejects_another_document_type() -> None:
+    with pytest.raises(ValidationError, match="GuidanceCatalog"):
+        GuidanceCatalog.from_text(json.dumps(CATALOG))
 
 
 def test_loads_accepts_bytearray() -> None:
@@ -166,8 +188,9 @@ def test_load_contains_undecodable_bytes_from_a_file_object() -> None:
 
 def test_a_field_from_a_later_minor_is_accepted() -> None:
     """Gemara v1 is additive, so a v1.5.0 reader must not reject a v1.6.0 document."""
-    doc = dict(CATALOG)
+    doc = {**CATALOG, "metadata": dict(CATALOG["metadata"])}
     doc["field-added-in-a-later-minor"] = "hello"
+    doc["metadata"]["field-added-in-a-later-minor"] = "hello"
     assert isinstance(loads(json.dumps(doc)), ControlCatalog)
 
 
@@ -179,12 +202,15 @@ def test_a_field_from_a_later_minor_is_not_carried_onto_the_model() -> None:
     an attribute kept at runtime but absent from the stubs would be invisible to
     every type checker, in a package whose entire product is types.
     """
-    doc = dict(CATALOG)
+    doc = {**CATALOG, "metadata": dict(CATALOG["metadata"])}
     doc["field-added-in-a-later-minor"] = "hello"
+    doc["metadata"]["field-added-in-a-later-minor"] = "hello"
     parsed = loads(json.dumps(doc))
     assert not hasattr(parsed, "field-added-in-a-later-minor")
+    assert not hasattr(parsed.metadata, "field-added-in-a-later-minor")
     dumped = parsed.model_dump(by_alias=True, mode="json", exclude_none=True)
     assert "field-added-in-a-later-minor" not in dumped
+    assert "field-added-in-a-later-minor" not in dumped["metadata"]
 
 
 def test_unknown_document_type_is_a_gemara_error() -> None:
@@ -193,6 +219,6 @@ def test_unknown_document_type_is_a_gemara_error() -> None:
 
 def test_schema_version_matches_provenance() -> None:
     provenance = json.loads(
-        (Path(__file__).resolve().parents[1] / "schemas" / "provenance.json").read_text(encoding="utf-8")
+        (Path(__file__).resolve().parents[3] / "schemas" / "provenance.json").read_text(encoding="utf-8")
     )
     assert SCHEMA_VERSION == provenance["ref"].lstrip("v")

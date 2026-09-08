@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from gemara.v1 import DOCUMENT_TYPES, GemaraDocument
 
-SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schemas"
+SCHEMA_DIR = Path(__file__).resolve().parents[3] / "schemas"
 
 
 def test_registry_matches_the_artifact_type_enum() -> None:

@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
 
 import generate  # noqa: E402
 
@@ -112,6 +112,48 @@ def test_ignore_unknown_properties_leaves_schemas_alone_that_never_closed() -> N
     assert schema["$defs"]["Doc"]["additionalProperties"] == {"type": "string"}
 
 
+def test_fold_hidden_definitions_replaces_refs_with_base_definitions() -> None:
+    schema: dict[str, Any] = {
+        "$defs": {
+            "Mapping": {"type": "object"},
+            "AssessmentLog": {"type": "object"},
+            "FutureBase": {"type": "object"},
+            "_MappingStrict": {"$ref": "#/$defs/Mapping", "type": "object"},
+            "_AssessmentLogStrict": {"$ref": "#/$defs/AssessmentLog", "type": "object"},
+            "_FutureWrapper": {"$ref": "#/$defs/FutureBase", "type": "object"},
+            "Document": {
+                "properties": {
+                    "mapping": {"$ref": "#/$defs/_MappingStrict"},
+                    "logs": {"items": {"$ref": "#/$defs/_AssessmentLogStrict"}, "type": "array"},
+                    "future": {"$ref": "#/$defs/_FutureWrapper"},
+                }
+            },
+        }
+    }
+
+    merged = generate.fold_hidden_definitions(schema)
+
+    assert merged == 3
+    assert schema["$defs"]["Document"]["properties"]["mapping"] == {"$ref": "#/$defs/Mapping"}
+    assert schema["$defs"]["Document"]["properties"]["logs"]["items"] == {"$ref": "#/$defs/AssessmentLog"}
+    assert schema["$defs"]["Document"]["properties"]["future"] == {"$ref": "#/$defs/FutureBase"}
+    assert "_MappingStrict" not in schema["$defs"]
+    assert "_AssessmentLogStrict" not in schema["$defs"]
+    assert "_FutureWrapper" not in schema["$defs"]
+
+
+def test_fold_hidden_definitions_rejects_hidden_constraints() -> None:
+    schema: dict[str, Any] = {
+        "$defs": {
+            "Base": {"type": "object"},
+            "_Constrained": {"$ref": "#/$defs/Base", "required": ["value"], "type": "object"},
+        }
+    }
+
+    with pytest.raises(generate.GenerateError, match="cannot be safely folded"):
+        generate.fold_hidden_definitions(schema)
+
+
 def test_render_registry_emits_sorted_typed_entries() -> None:
     source = generate.render_registry(
         {"Lexicon": "Lexicon", "ControlCatalog": "ControlCatalog"},
@@ -132,10 +174,16 @@ def test_public_model_names_reads_classes_from_source() -> None:
 
 
 def test_render_models_excludes_denylisted_names_from_all() -> None:
-    source = generate.render_models("class Alpha(BaseModel):\n    pass\n", ["Alpha", "Model", "Type"])
+    source = generate.render_models(
+        "from __future__ import annotations\n\nclass Alpha(BaseModel):\n    pass\n",
+        ["Alpha", "Model", "Type"],
+        ["Alpha"],
+    )
     assert '"Alpha",' in source
     assert '"Model",' not in source
     assert '"Type",' not in source
+    assert "from gemara.v1._document import GemaraDocumentModel" in source
+    assert "class Alpha(GemaraDocumentModel):" in source
 
 
 def test_recover_array_allof_element_type_collapses_a_single_items_arm() -> None:

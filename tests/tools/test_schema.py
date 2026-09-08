@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = PROJECT_ROOT / "schemas" / "gemara-v1.schema.json"
 PROVENANCE_PATH = PROJECT_ROOT / "schemas" / "provenance.json"
 

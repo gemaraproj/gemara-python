@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from support import fixture_paths
+from test_helpers import fixture_paths
 
 from gemara.v1 import UnknownDocumentTypeError, load
 
