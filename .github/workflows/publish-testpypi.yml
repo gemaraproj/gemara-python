@@ -1,13 +1,9 @@
 name: Publish to TestPyPI
 
-# Manual only. TestPyPI is a rehearsal space, so it is deliberately not chained
-# to the tag-driven release: coupling them means you cannot rehearse without
-# burning a real version, and a TestPyPI hiccup (most often "version already
-# exists") would block a PyPI release that was otherwise fine.
-#
-# Pick the ref to publish in the Actions UI when dispatching.
 on:
   workflow_dispatch:
+  push:
+    tags: [ "test-v*" ]
 
 permissions:
   contents: read
@@ -18,17 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: testpypi
     permissions:
-      # Trusted publishing: mint a short-lived OIDC token instead of holding a
-      # long-lived PyPI API token in repository secrets.
-      id-token: write
+      id-token: write  # For trusted publishing
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
-          # Publishes real artifacts, so it must not restore a cache that a pull
-          # request workflow could have poisoned.
           enable-cache: false
       - run: uv sync --frozen
       - name: Run tests, failing if any is skipped
@@ -46,3 +38,36 @@ jobs:
           # Rehearsals get re-run against an unchanged version; that should be a
           # no-op rather than a failure.
           skip-existing: true
+
+  verify-published:
+    name: Test the TestPyPI package
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: false
+      - name: Install the published package from TestPyPI
+        run: |
+          version="$(python -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          uv venv --clear .testpypi-venv
+          uv pip install --python .testpypi-venv/bin/python \
+            --index-url https://test.pypi.org/simple \
+            --extra-index-url https://pypi.org/simple \
+            "gemara-python==$version" pytest
+      - name: Verify imports use the installed artifact
+        run: |
+          .testpypi-venv/bin/python -c 'import gemara.v1, pathlib; assert pathlib.Path(gemara.v1.__file__).is_relative_to(pathlib.Path.cwd() / ".testpypi-venv")'
+      - name: Run tests against the TestPyPI package
+        run: |
+          set -o pipefail
+          PYTHONPATH=tests .testpypi-venv/bin/python -m pytest -q \
+            tests/gemara/v1/test_loader.py tests/gemara/v1/test_registry.py \
+            tests/test_fixtures.py | tee summary.txt
+          if grep -qE '[0-9]+ skipped' summary.txt; then
+            echo "::error::tests were skipped; the fixture corpus must always run"
+            exit 1
+          fi

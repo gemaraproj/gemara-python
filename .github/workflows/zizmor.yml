@@ -1,0 +1,38 @@
+name: Audit Workflow Changes
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**' # Triggers only when workflow files change
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # `main` is excluded so pushes there always produce a complete record.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  workflows:
+    name: Workflow security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: Audit workflows and dependabot config with zizmor
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+        with:
+          # Emit inline annotations rather than SARIF: results land on the PR
+          # without depending on code scanning being enabled for the repo.
+          # The two options are mutually exclusive.
+          advanced-security: false
+          annotations: true
