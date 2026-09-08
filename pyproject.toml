@@ -3,7 +3,7 @@ requires = ["uv_build>=0.9.0,<0.15.0"]
 build-backend = "uv_build"
 
 [project]
-name = "py-gemara"
+name = "gemara-python"
 version = "0.1.0"
 description = "Gemara v1 schema types as Pydantic v2 models"
 readme = "README.md"
@@ -20,9 +20,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/gemaraproj/py-gemara"
-Repository = "https://github.com/gemaraproj/py-gemara"
-Issues = "https://github.com/gemaraproj/py-gemara/issues"
+Homepage = "https://github.com/gemaraproj/gemara-python"
+Repository = "https://github.com/gemaraproj/gemara-python"
+Issues = "https://github.com/gemaraproj/gemara-python/issues"
 
 [dependency-groups]
 test = ["pytest>=8.0"]
@@ -33,15 +33,14 @@ lint = ["ruff==0.16.6", "mypy>=2.3", "types-PyYAML>=6.0"]
 
 # Needed only to regenerate the models. Pinned exactly for the same reason as
 # ruff: it decides the committed bytes the drift gate compares against.
-codegen = ["datamodel-code-generator==0.76.2"]
+codegen = ["datamodel-code-generator==0.76.2", "poethepoet>=0.30"]
 
-# Maintainer-only: re-vendoring the schema also needs `cue` on PATH, which is not
+# IMPORTANT: re-vendoring the schema also needs `cue` on PATH, which is not
 # a Python dependency and cannot be declared here. See CONTRIBUTING.md.
 dev = [
     {include-group = "test"},
     {include-group = "lint"},
     {include-group = "codegen"},
-    "poethepoet>=0.30",
 ]
 
 [tool.uv.build-backend]

@@ -164,6 +164,63 @@ wheels = [
 ]
 
 [[package]]
+name = "gemara-python"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+
+[package.dev-dependencies]
+codegen = [
+    { name = "datamodel-code-generator" },
+    { name = "poethepoet" },
+]
+dev = [
+    { name = "datamodel-code-generator" },
+    { name = "mypy" },
+    { name = "poethepoet" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+]
+lint = [
+    { name = "mypy" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+]
+test = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.9" },
+    { name = "pyyaml", specifier = ">=6.0" },
+]
+
+[package.metadata.requires-dev]
+codegen = [
+    { name = "datamodel-code-generator", specifier = "==0.76.2" },
+    { name = "poethepoet", specifier = ">=0.30" },
+]
+dev = [
+    { name = "datamodel-code-generator", specifier = "==0.76.2" },
+    { name = "mypy", specifier = ">=2.3" },
+    { name = "poethepoet", specifier = ">=0.30" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "ruff", specifier = "==0.16.6" },
+    { name = "types-pyyaml", specifier = ">=6.0" },
+]
+lint = [
+    { name = "mypy", specifier = ">=2.3" },
+    { name = "ruff", specifier = "==0.16.6" },
+    { name = "types-pyyaml", specifier = ">=6.0" },
+]
+test = [{ name = "pytest", specifier = ">=8.0" }]
+
+[[package]]
 name = "genson"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -540,59 +597,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/5c/92/93a4af9511b8c7c64
 wheels = [
     { url = "https://files.pythonhosted.org/packages/59/8d/d7c9455b15f8d2d7ce57e7b71a8ef8d02d9992ae4283c9777120620c9022/poethepoet-0.48.0-py3-none-any.whl", hash = "sha256:98da6096d060f49b8d84034770265863fb7dc92a40233b7694b9d216ac68737d", size = 185808, upload-time = "2026-07-05T21:48:28.601Z" },
 ]
-
-[[package]]
-name = "py-gemara"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "pydantic" },
-    { name = "pyyaml" },
-]
-
-[package.dev-dependencies]
-codegen = [
-    { name = "datamodel-code-generator" },
-]
-dev = [
-    { name = "datamodel-code-generator" },
-    { name = "mypy" },
-    { name = "poethepoet" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-]
-lint = [
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-]
-test = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pydantic", specifier = ">=2.9" },
-    { name = "pyyaml", specifier = ">=6.0" },
-]
-
-[package.metadata.requires-dev]
-codegen = [{ name = "datamodel-code-generator", specifier = "==0.76.2" }]
-dev = [
-    { name = "datamodel-code-generator", specifier = "==0.76.2" },
-    { name = "mypy", specifier = ">=2.3" },
-    { name = "poethepoet", specifier = ">=0.30" },
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "ruff", specifier = "==0.16.6" },
-    { name = "types-pyyaml", specifier = ">=6.0" },
-]
-lint = [
-    { name = "mypy", specifier = ">=2.3" },
-    { name = "ruff", specifier = "==0.16.6" },
-    { name = "types-pyyaml", specifier = ">=6.0" },
-]
-test = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "pydantic"
