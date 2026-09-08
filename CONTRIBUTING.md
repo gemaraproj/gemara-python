@@ -10,28 +10,25 @@ uv run poe format      # ruff format
 
 Dependencies are split into purpose-scoped groups, so a job or a contributor can
 install only what it needs: `test`, `lint`, `codegen` (regenerating the models),
-and `dev`, which includes all three plus the task runner. `uv sync` installs
-`dev`; `uv sync --only-group lint` is enough to run the linters.
+and `dev`, which includes all three. `uv sync` installs `dev`; `uv sync --only-group lint`
+is enough to run the linters.
 
 ## How the models are produced
 
-Two steps, deliberately separated by whether they need the outside world.
+This consists of two steps.
 
-`poe sync-schema` is maintainer-only and needs `cue` on PATH plus network
+1. `poe sync-schema`: needs `cue` on PATH plus network
 access. It exports every `#Definition` from the upstream CUE module as JSON
 Schema, merges them into `schemas/gemara-v1.schema.json`, records the exact ref
 and digest in `schemas/provenance.json`, and re-vendors the upstream
-`good-*`/`bad-*` corpus into `schemas/fixtures/`. JSON Schema rather than
-upstream's OpenAPI projection, which loses integer types and flattens
-`date-time` to `date`.
+`good-*`/`bad-*` corpus into `schemas/fixtures/`.
 
-`poe generate` is hermetic — no `cue`, no network. It reads the vendored schema,
-applies its repair passes, calls `datamodel-code-generator` in-process, and writes
-`src/gemara/v1/_models.py` and `_registry.py`.
+2. `poe generate`: reads the vendored schema, applies its repair passes,
+calls `datamodel-code-generator` in-process, and writes `src/gemara/v1/_models.py`
+and `_registry.py`.
 
 Both generated files are committed. **Never edit them by hand**: CI regenerates
-them and fails on any diff, so a hand edit is reverted on the next run. Change
-`tools/generate.py` instead, then `poe generate`.
+them and fails on any diff, so a hand edit is reverted on the next run.
 
 The codegen invocation is fixed at
 `--preset practical-py311-20260619 --schema-version 2020-12`, and
@@ -58,9 +55,7 @@ suite rather than passing unnoticed — that is the point of them.
 ## Tests
 
 The fixture corpus is vendored, so the suite runs anywhere with no `cue` and no
-warm cache. CI fails the build if **any** test is skipped: the predecessor read
-its fixtures from `~/.cache/cue`, reported "1 passed, 39 skipped" on every run,
-and stayed green on a single assertion for its entire life.
+warm cache. CI fails the build if any test is skipped.
 
 ## Releasing
 
@@ -69,7 +64,7 @@ Publishing uses Trusted Publishing (OIDC); no API tokens are stored. The
 publisher registered on each index.
 
 - **Rehearse:** run the *Publish to TestPyPI* workflow manually
-  (`workflow_dispatch`) against any ref.
+  (`workflow_dispatch`) against any ref or push a test tag matching `test-vX.Y.X`.
 - **Release:** set `version` in `pyproject.toml`, then push a matching `vX.Y.Z`
   tag. The release workflow refuses a tag that disagrees with that version, and
   refuses `0.0.0` outright.

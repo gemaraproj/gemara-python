@@ -1,11 +1,18 @@
-# py-gemara
+# gemara-python
 
-[Gemara](https://github.com/gemaraproj/gemara) v1 schema types as Pydantic v2
-models, generated from the upstream CUE schemas.
+## What This Is
+
+`gemara-python` provides generated Pydantic v2 models for
+[Gemara](https://github.com/gemaraproj/gemara) v1 documents.
+Use it to load, validate, and work with Gemara JSON or YAML in Python.
+
+## How to Install
 
 ```bash
-pip install py-gemara
+pip install gemara-python
 ```
+
+## Getting Started
 
 ```python
 from gemara.v1 import ControlCatalog, Lexicon, load
@@ -19,43 +26,42 @@ match doc:
         print(len(doc.terms or []))
 ```
 
-`load` takes a path or an open file, `loads` takes text or bytes, and both read
-JSON or YAML. They dispatch on `metadata.type` through `DOCUMENT_TYPES` — a
-registry generated from the schema's own discriminators, so you never hand-write
-a dispatch table — and return a `GemaraDocument`, the union of the 13 document
-models. Narrowing it with `match` or `isinstance` typechecks under `mypy
---strict`; the package ships `py.typed`.
+`load` accepts a file path or open file. Use `loads` for JSON or YAML text and
+bytes. Both return the model selected by `metadata.type`.
 
-Failures raise from one hierarchy: `UnknownDocumentTypeError` when
-`metadata.type` is missing or unrecognised (its message names the offending
-value and the 13 valid ones), `GemaraError` for anything unparseable, and
-`pydantic.ValidationError` when a document does not match its model.
+When the expected document type is already known, load it directly from the
+model to receive that concrete type without dispatching:
 
-`SCHEMA_VERSION` reports the Gemara release these models were generated from:
-currently **v1.5.0**.
+```python
+from gemara.v1 import GuidanceCatalog
 
-## Reading documents from a newer v1.x
+guidance = GuidanceCatalog.from_file("guidance.yaml")
+```
+
+`from_file` accepts a file path or open file. `from_text` accepts JSON or YAML
+text and bytes. Both validate the input as the selected document model.
+
+## Reference
+
+- `DOCUMENT_TYPES` contains the supported document models.
+- `SCHEMA_VERSION` is the Gemara release used to generate the models
+- Invalid input raises `GemaraError`, `UnknownDocumentTypeError`, or
+  `pydantic.ValidationError`.
+- `load` and `from_file` also propagate filesystem and stream I/O exceptions.
+
+## Compatibility
 
 Changes within Gemara v1 are additive, so these models read every v1.x document,
 including ones written against a minor newer than `SCHEMA_VERSION`. Properties
-they do not recognise are ignored — accepted, then dropped rather than carried
-onto the model. This matches
-[go-gemara](https://github.com/gemaraproj/go-gemara).
-
-The consequence worth knowing: `load` followed by `model_dump` is **not** a
-faithful copy of such a document, because its newer fields are absent from the
-output. These models are a reader, not a round-tripping editor — keep the source
-if you need to preserve it byte for byte.
+they do not recognize are accepted and dropped rather than carried onto the
+model.
 
 ## Known limitations
 
 **These models are a structural validator, not a full Gemara validator.** CUE
 enforces cross-field semantics — uniqueness via hidden `_unique*` fields,
-referential integrity via comprehensions — that cannot survive projection into
-JSON Schema. Measured against the upstream corpus at v1.5.0, 12 of 17 `bad-*`
-fixtures parse successfully, including `bad-lexicon-duplicate-term-id`,
-`bad-risk-catalog-duplicate-rank`, `bad-evaluation-log-missing-start`, and the
-`bad-*-invalid-group` family.
+referential integrity via comprehensions -- that cannot survive projection into
+JSON Schema.
 
 What still applies: required fields, enums, patterns, and length bounds. If you
 need full validation, run `cue vet` against the Gemara schemas.

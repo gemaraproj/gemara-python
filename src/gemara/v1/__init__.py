@@ -1,11 +1,4 @@
-"""Gemara v1 schema types as Pydantic v2 models.
-
-    from gemara.v1 import load, DOCUMENT_TYPES, ControlCatalog
-
-    doc = load("catalog.yaml")   # dispatches on metadata.type
-
-The models are a *structural* validator. See the README's known limitations.
-"""
+"""Gemara v1 schema types as Pydantic v2 models."""
 
 from __future__ import annotations
 
