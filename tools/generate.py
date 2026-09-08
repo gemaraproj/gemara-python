@@ -187,46 +187,11 @@ def ignore_unknown_properties(schema: dict[str, Any]) -> int:
 
 
 def recover_array_allof_element_type(schema: dict[str, Any]) -> int:
-    """Collapse an array-typed `allOf` node into its one strongly-typed arm.
+    """Preserve an array's item type when codegen cannot merge its `allOf`.
 
-    CUE compiles a comprehension's array constraint (e.g. "Clear dispositions
-    only contain Passed results") and its element-typed constraint into
-    separate `allOf` arms that both narrow `type: array`. `datamodel-codegen`
-    does not merge an `allOf` of arrays, so every arm collapses to `Any`,
-    discarding the element type and any `minItems`/`items` constraint.
-
-    This is only safe to undo when exactly one arm carries `items`: that arm
-    is then the sole source of element shape. When two or more arms carry
-    `items`, which one is authoritative is ambiguous -- they may even
-    disagree, as with `ControlEvaluation.assessment-logs`, where CUE defaults
-    a field in from elsewhere that a fixed element type cannot express -- so
-    the node is left untouched rather than guessing.
-
-    Known limitation: the losing arm(s) are discarded whole. Only the winning
-    arm and the outer node's own sibling keys survive, so any keyword a losing
-    arm carries is dropped silently. That is lossless against the schema this
-    was written for -- Gemara v1.5.0's sole collapsing site,
-    `EnforcementLog.actions`, has a losing arm holding just `description` and
-    `type`, comprehension metadata that no structural validator can enforce
-    anyway (`bad-enforcement-clear-failed`, written to test exactly that rule,
-    parses here and in go-gemara alike). But it is an assumption about the
-    shape of CUE's output, not a checked invariant: if a future upstream ref
-    ever emits a losing arm carrying a real array constraint -- `maxItems`,
-    `uniqueItems`, its own `minItems` -- that constraint vanishes, and the only
-    signal is a field validating more loosely in the `_models.py` drift diff,
-    which is an absence and easy to miss.
-
-    Deliberately not guarded with an assertion. Failing generation over a
-    keyword nobody has seen would block a future `sync-schema` on a schema
-    change that is very likely irrelevant, and merging losing arms properly
-    means implementing `allOf` intersection semantics per keyword -- the class
-    of repair pass this project banned after the predecessor's
-    `flatten_struct_embedding` got it wrong. If it ever bites, the fix is to
-    merge the specific keyword rather than to generalise.
-
-    Mutates `schema` in place (this pass runs on the in-memory dict before
-    codegen; it never touches anything under `schemas/`). Returns the number
-    of nodes collapsed, for logging.
+    Collapses array-only `allOf` nodes that have exactly one arm with `items`.
+    Nodes with multiple item definitions are left unchanged to avoid guessing.
+    Mutates the in-memory schema and returns the number of nodes collapsed.
     """
     collapsed = 0
 
