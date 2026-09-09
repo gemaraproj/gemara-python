@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import sys
+import shutil
+import subprocess
 from pathlib import Path
+from subprocess import CompletedProcess
 from typing import Any
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
-
-import sync_schema  # noqa: E402
+import sync_schema
 
 
 def test_merge_exports_flattens_nested_defs_and_roots() -> None:
@@ -55,6 +54,45 @@ def test_merge_exports_rejects_conflicting_nested_defs() -> None:
     }
     with pytest.raises(sync_schema.SyncError, match="conflicting definition 'Shared'"):
         sync_schema.merge_exports(exports)
+
+
+def test_merge_exports_rejects_conflicting_root_and_nested_defs() -> None:
+    """A root export must not disagree with a stored nested def of the same name."""
+    exports: dict[str, dict[str, Any]] = {
+        "#A": {"$defs": {"Shared": {"type": "string"}}, "type": "object"},
+        "#Shared": {"type": "integer"},
+    }
+    with pytest.raises(sync_schema.SyncError, match="conflicting definition 'Shared'"):
+        sync_schema.merge_exports(exports)
+
+
+def test_vendor_fixtures_preserves_existing_corpus_when_copy_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    schema_dir = tmp_path / "schemas"
+    fixture_dir = schema_dir / "fixtures"
+    fixture_dir.mkdir(parents=True)
+    existing = fixture_dir / "good-existing.yaml"
+    existing.write_text("existing", encoding="utf-8")
+
+    def fake_run(args: list[str], **kwargs: Any) -> CompletedProcess[str]:
+        if args[:2] == ["git", "clone"]:
+            clone = Path(args[-1])
+            source = clone / "test" / "test-data"
+            source.mkdir(parents=True)
+            (source / "good-new.yaml").write_text("new", encoding="utf-8")
+            return CompletedProcess(args, 0, "", "")
+        return CompletedProcess(args, 0, "commit", "")
+
+    monkeypatch.setattr(sync_schema, "SCHEMA_DIR", schema_dir)
+    monkeypatch.setattr(sync_schema, "FIXTURE_DIR", fixture_dir)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(shutil, "copy2", lambda *_: (_ for _ in ()).throw(OSError("disk full")))
+
+    with pytest.raises(OSError, match="disk full"):
+        sync_schema.vendor_fixtures("v1.5.0")
+
+    assert existing.read_text(encoding="utf-8") == "existing"
 
 
 def test_document_type_names_reads_the_artifact_type_enum() -> None:

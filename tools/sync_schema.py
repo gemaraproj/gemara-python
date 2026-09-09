@@ -136,7 +136,7 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def vendor_fixtures(ref: str) -> str:
     """Clone the schema repo at `ref` and copy its good-*/bad-* test data."""
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=SCHEMA_DIR) as tmp:
         clone = Path(tmp) / "gemara"
         cloned = subprocess.run(
             ["git", "clone", "--depth", "1", "--branch", ref, REPOSITORY, str(clone)],
@@ -162,17 +162,29 @@ def vendor_fixtures(ref: str) -> str:
         if not source.is_dir():
             raise SyncError(f"{ref} has no test/test-data directory")
 
-        if FIXTURE_DIR.exists():
-            shutil.rmtree(FIXTURE_DIR)
-        FIXTURE_DIR.mkdir(parents=True)
+        staged_fixtures = Path(tmp) / "fixtures"
+        staged_fixtures.mkdir()
 
         copied = 0
         for pattern in FIXTURE_GLOBS:
             for path in sorted(source.glob(pattern)):
-                shutil.copy2(path, FIXTURE_DIR / path.name)
+                shutil.copy2(path, staged_fixtures / path.name)
                 copied += 1
         if copied == 0:
             raise SyncError(f"no fixtures matched {FIXTURE_GLOBS} at {ref}")
+
+        previous_fixtures = Path(tmp) / "previous-fixtures"
+        if FIXTURE_DIR.exists():
+            FIXTURE_DIR.rename(previous_fixtures)
+        try:
+            staged_fixtures.rename(FIXTURE_DIR)
+        except OSError:
+            if previous_fixtures.exists():
+                previous_fixtures.rename(FIXTURE_DIR)
+            raise
+        if previous_fixtures.exists():
+            shutil.rmtree(previous_fixtures)
+
         print(f"  vendored {copied} fixtures")
         return commit
 
@@ -182,7 +194,14 @@ def main() -> int:
     parser.add_argument("--ref", default=DEFAULT_REF, help=f"upstream tag (default: {DEFAULT_REF})")
     args = parser.parse_args()
     ref: str = args.ref
+    try:
+        return _sync(ref)
+    except SyncError as exc:
+        print(f"sync: {exc}", file=sys.stderr)
+        return 1
 
+
+def _sync(ref: str) -> int:
     print(f"Syncing {CUE_MODULE}@{ref}")
 
     print("  Discovering definitions...")
