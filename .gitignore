@@ -222,6 +222,3 @@ docs/superpowers/
 
 # Superpowers SDD workspace (scratch, not tracked)
 .superpowers/
-
-# Written to the repo root by CI's no-skipped-tests step (see ci.yml/release.yml)
-summary.txt

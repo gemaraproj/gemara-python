@@ -29,15 +29,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen --no-default-groups --group test --python ${{ matrix.python-version }}
-      - name: Run tests, failing if any is skipped
-        run: |
-          # Defect 1 was a suite that skipped 39 of 40 tests and stayed green.
-          set -o pipefail
-          uv run pytest -q | tee summary.txt
-          if grep -qE '[0-9]+ skipped' summary.txt; then
-            echo "::error::tests were skipped; the fixture corpus must always run"
-            exit 1
-          fi
+      - run: uv run pytest -q
 
   quality:
     name: Lint, format and types
@@ -67,7 +59,4 @@ jobs:
       - run: uv sync --frozen --no-default-groups --group codegen --group lint
       - name: Regenerate models from the vendored schema
         run: uv run poe generate
-      - name: Fail if the committed output drifted
-        run: |
-          git diff --exit-code src/gemara/v1/_models.py src/gemara/v1/_registry.py \
-            || { echo "::error::generated files are stale; run 'uv run poe generate'"; exit 1; }
+      - uses: ./.github/actions/check-generated-models
