@@ -129,6 +129,12 @@ def test_missing_type_raises_unknown_document_type_with_none() -> None:
     assert excinfo.value.value is None
 
 
+def test_missing_metadata_key_raises_unknown_document_type_with_none() -> None:
+    with pytest.raises(UnknownDocumentTypeError) as excinfo:
+        loads(json.dumps({}))
+    assert excinfo.value.value is None
+
+
 def test_non_mapping_document_is_rejected() -> None:
     with pytest.raises(GemaraError, match="mapping"):
         loads("[1, 2, 3]")

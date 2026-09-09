@@ -42,6 +42,11 @@ def _decode(data: bytes | bytearray | memoryview) -> str:
         raise GemaraError(f"document is not valid UTF-8: {exc}") from exc
 
 
+def _decode_text(text: str | bytes | bytearray | memoryview) -> str:
+    """Return text unchanged or decode a bytes-like document as UTF-8."""
+    return text if isinstance(text, str) else _decode(text)
+
+
 def _parse(text: str) -> Any:
     """Parse JSON or YAML. YAML is a superset of JSON, so one parser covers both."""
     try:
@@ -53,11 +58,7 @@ def _parse(text: str) -> Any:
 
 def _loads_as(model: type[T], text: str | bytes | bytearray | memoryview) -> T:
     """Parse text and validate it as one explicitly selected document model."""
-    if isinstance(text, str):
-        decoded = text
-    else:
-        decoded = _decode(text)
-    return model.model_validate(_parse(decoded))
+    return model.model_validate(_parse(_decode_text(text)))
 
 
 def _read_source(source: str | os.PathLike[str] | IO[str] | IO[bytes]) -> str | bytes:
@@ -68,6 +69,7 @@ def _read_source(source: str | os.PathLike[str] | IO[str] | IO[bytes]) -> str | 
 
 
 def _dispatch(raw: Any) -> GemaraDocument:
+    """Route a parsed mapping to the model selected by `metadata.type`."""
     if not isinstance(raw, dict):
         raise GemaraError(f"a Gemara document must be a mapping, got {type(raw).__name__}")
     metadata = raw.get("metadata")
@@ -100,14 +102,7 @@ def loads(text: str | bytes | bytearray | memoryview) -> GemaraDocument:
     does not match its model. No other exception type -- in particular no
     `yaml.YAMLError` -- escapes this function.
     """
-    if isinstance(text, str):
-        decoded = text
-    else:
-        # `isinstance(text, bytes)` is False for `bytearray`/`memoryview`, so a
-        # narrower check would let those buffers reach here undecoded and fail
-        # deep inside YAML/JSON with an unhelpful internals error instead.
-        decoded = _decode(text)
-    return _dispatch(_parse(decoded))
+    return _dispatch(_parse(_decode_text(text)))
 
 
 def load(source: str | os.PathLike[str] | IO[str] | IO[bytes]) -> GemaraDocument:
