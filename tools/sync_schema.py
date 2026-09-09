@@ -115,7 +115,10 @@ def merge_exports(exports: dict[str, dict[str, Any]]) -> dict[str, Any]:
             defs.setdefault(key, value)
     for name, export in exports.items():
         body = {k: v for k, v in export.items() if k not in ("$schema", "$defs")}
-        defs[_normalize_def_name(name)] = body
+        key = _normalize_def_name(name)
+        if key in defs and defs[key] != body:
+            raise SyncError(f"conflicting definition '{key}' across exports")
+        defs[key] = body
     return {"$schema": SCHEMA_DIALECT, "$defs": defs}
 
 

@@ -23,7 +23,7 @@ match doc:
     case ControlCatalog():
         print(len(doc.controls or []))
     case Lexicon():
-        print(len(doc.terms or []))
+        print(len(doc.terms))
 ```
 
 `load` accepts a file path or open file. Use `loads` for JSON or YAML text and
