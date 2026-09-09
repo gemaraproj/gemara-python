@@ -3,15 +3,10 @@
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 from typing import Any
 
+import generate
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
-
-import generate  # noqa: E402
 
 
 def _schema() -> dict[str, Any]:
@@ -76,7 +71,7 @@ def test_check_document_types_accepts_agreement_with_artifact_type() -> None:
 
 
 def test_check_document_types_rejects_a_missing_discriminator() -> None:
-    """Defect 4 regression guard: a destroyed discriminator must fail loudly."""
+    """A destroyed discriminator must fail loudly at generation time."""
     schema = _schema()
     del schema["$defs"]["Lexicon"]["properties"]["metadata"]["properties"]
     doc_types = generate.inject_metadata_titles(schema)
@@ -181,7 +176,10 @@ def test_public_model_names_reads_classes_from_source() -> None:
 
 def test_render_models_excludes_denylisted_names_from_all() -> None:
     source = generate.render_models(
-        "from __future__ import annotations\n\nclass Alpha(BaseModel):\n    pass\n",
+        "from __future__ import annotations\n\n"
+        "class Catalog(BaseModel):\n    pass\n\n\n"
+        "class Log(BaseModel):\n    pass\n\n\n"
+        "class Alpha(BaseModel):\n    pass\n",
         ["Alpha", "Model", "Type"],
         ["Alpha"],
     )
@@ -195,8 +193,9 @@ def test_render_models_excludes_denylisted_names_from_all() -> None:
 def test_render_models_makes_category_bases_document_models() -> None:
     source = generate.render_models(
         "from __future__ import annotations\n\nclass Catalog(BaseModel):\n    pass\n\n\n"
+        "class Log(BaseModel):\n    pass\n\n\n"
         "class ControlCatalog(BaseModel):\n    pass\n",
-        ["Catalog", "ControlCatalog"],
+        ["Catalog", "Log", "ControlCatalog"],
         ["ControlCatalog"],
     )
     assert "class Catalog(GemaraDocumentModel):" in source

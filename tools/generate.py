@@ -13,7 +13,6 @@ import ast
 import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any, Final
 
@@ -258,10 +257,11 @@ def run_codegen(schema: dict[str, Any]) -> str:
     """Generate the models from the in-memory schema, in-process.
 
     `datamodel_code_generator.generate` takes the schema as a mapping and returns
-    the source, so nothing is serialised to disk and the CLI need not be on PATH.
-    `input_filename` sets the name the generated header records; it is fixed
-    because the drift gate compares committed bytes, and a varying header would
-    fail it on its own. Verified byte-identical to the equivalent CLI invocation.
+    the source as a `str` when no `output` path is given, so nothing touches
+    disk and the CLI need not be on PATH. `input_filename` sets the name the
+    generated header records; it is fixed because the drift gate compares
+    committed bytes, and a varying header would fail it on its own. Verified
+    byte-identical to the equivalent CLI invocation.
 
     Imported here rather than at module scope so this module's pure functions --
     the ones the unit tests exercise -- stay importable without the codegen
@@ -269,20 +269,19 @@ def run_codegen(schema: dict[str, Any]) -> str:
     """
     from datamodel_code_generator import Error, InputFileType, generate
 
-    with tempfile.TemporaryDirectory() as tmp:
-        output = Path(tmp) / "models.py"
-        try:
-            generate(
-                schema,
-                input_file_type=InputFileType.JsonSchema,
-                input_filename=CODEGEN_INPUT_NAME,
-                schema_version="2020-12",
-                preset=CODEGEN_PRESET,
-                output=output,
-            )
-        except Error as exc:  # datamodel-code-generator's own error type
-            raise GenerateError(f"codegen failed: {exc}") from exc
-        return output.read_text(encoding="utf-8")
+    try:
+        source = generate(
+            schema,
+            input_file_type=InputFileType.JsonSchema,
+            input_filename=CODEGEN_INPUT_NAME,
+            schema_version="2020-12",
+            preset=CODEGEN_PRESET,
+        )
+    except Error as exc:  # datamodel-code-generator's own error type
+        raise GenerateError(f"codegen failed: {exc}") from exc
+    if not isinstance(source, str):
+        raise GenerateError("codegen did not return a single module; the schema shape changed")
+    return source
 
 
 def render_models(body: str, model_names: list[str], document_models: list[str]) -> str:
@@ -295,7 +294,10 @@ def render_models(body: str, model_names: list[str], document_models: list[str])
         1,
     )
     for base in ("Catalog", "Log"):
-        body = body.replace(f"class {base}(BaseModel):", f"class {base}(GemaraDocumentModel):")
+        declaration = f"class {base}(BaseModel):"
+        if body.count(declaration) != 1:
+            raise GenerateError(f"generated models have an unexpected declaration for category base {base!r}")
+        body = body.replace(declaration, f"class {base}(GemaraDocumentModel):")
     for model in document_models:
         declaration = f"class {model}(BaseModel):"
         if body.count(declaration) != 1:
@@ -357,6 +359,14 @@ def ruff_format(*paths: Path) -> None:
 
 
 def main() -> int:
+    try:
+        return _generate()
+    except GenerateError as exc:
+        print(f"generate: {exc}", file=sys.stderr)
+        return 1
+
+
+def _generate() -> int:
     if not SCHEMA_PATH.exists():
         raise GenerateError(f"{SCHEMA_PATH} is missing; run `poe sync-schema` first")
 
