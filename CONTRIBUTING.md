@@ -45,12 +45,12 @@ uv run poe test
 ```
 
 Review the diff to `schemas/` and `src/gemara/v1/_models.py` together. A field
-that got *looser* is the thing to watch for — see the known limitation
-documented on `recover_array_allof_element_type` in `tools/generate.py`.
+that got *looser* is the thing to watch for: a repair pass in `tools/generate.py`
+may drop a constraint it cannot merge, and the only signal is a looser generated
+type.
 
-Update `SEMANTIC_GAPS` in `tests/test_fixtures.py` if the corpus changed. Those
-entries are asserted to *still parse*, so newly-gained strictness fails the
-suite rather than passing unnoticed — that is the point of them.
+Update `SEMANTIC_GAPS` in `tests/test_fixtures.py` if the corpus changed. Read
+the comment on that set for what it means and when to move an entry.
 
 ## Tests
 

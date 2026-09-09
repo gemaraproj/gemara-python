@@ -4,9 +4,9 @@ that every `$ref` in it actually resolves.
 Hermetic and fast: no cue, no network -- these only read the committed
 `schemas/gemara-v1.schema.json` and `schemas/provenance.json`.
 
-Commit a21d87e fixed a dangling-`$ref` bug caused by cue's quoted identifiers
-(e.g. `#"reference-id"`). The regression guards added there were unit tests on
-synthetic inputs in `tests/test_sync_schema.py` -- nothing walked the real,
+Cue's quoted identifiers (e.g. `#"reference-id"`) have previously produced
+dangling `$ref`s. The regression guards for that bug are unit tests on
+synthetic inputs in `tests/tools/test_sync_schema.py` -- nothing walked the real,
 vendored schema's actual `$ref`s. A future upstream ref with a second quoted
 shape `sync_schema.py` doesn't anticipate could reproduce that bug with every
 existing test still green. `test_every_ref_resolves` is the guard that would
