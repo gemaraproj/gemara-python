@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 from test_helpers import fixture_paths
 
-from gemara.v1 import UnknownDocumentTypeError, load
+from gemara.v1 import DOCUMENT_TYPES, UnknownDocumentTypeError, load
 
 GOOD = fixture_paths("good-")
 BAD = fixture_paths("bad-")
@@ -63,7 +63,8 @@ def test_the_corpus_is_fully_accounted_for() -> None:
 
 @pytest.mark.parametrize("path", GOOD, ids=lambda p: p.stem)
 def test_good_fixture_validates(path: Path) -> None:
-    load(path)
+    document = load(path)
+    assert document.metadata.type in DOCUMENT_TYPES
 
 
 @pytest.mark.parametrize("path", GOOD, ids=lambda p: p.stem)
