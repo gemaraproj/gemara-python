@@ -10,10 +10,11 @@ on:
       - main
     paths:
       - '.github/workflows/**'
+      - '.github/dependabot.yml'
 
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   # `main` is excluded so pushes there always produce a complete record.
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 

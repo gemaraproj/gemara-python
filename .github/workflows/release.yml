@@ -47,6 +47,7 @@ jobs:
           git diff --exit-code src/gemara/v1/_models.py src/gemara/v1/_registry.py \
             || { echo "::error::generated files are stale; run 'uv run poe generate'"; exit 1; }
       - run: uv run poe lint
+      - run: uv run ruff format --check .
       - run: uv run poe typecheck
       - run: uv build
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
