@@ -56,9 +56,6 @@ select = ["E", "F", "I", "UP", "B"]
 # _models.py is generated; lint rules would only create churn against the drift gate.
 exclude = ["src/gemara/v1/_models.py"]
 
-[tool.ruff.lint.per-file-ignores]
-# The public API deliberately re-exports every model via a star import.
-"src/gemara/v1/__init__.py" = ["F403", "F405", "F822"]
 
 [tool.mypy]
 python_version = "3.11"

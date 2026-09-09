@@ -1,5 +1,4 @@
-"""Read a Gemara document and dispatch it to the right model.
-"""
+"""Read a Gemara document and dispatch it to the right model."""
 
 from __future__ import annotations
 
