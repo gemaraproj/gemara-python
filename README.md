@@ -44,7 +44,12 @@ text and bytes. Both validate the input as the selected document model.
 ## Reference
 
 - `DOCUMENT_TYPES` contains the supported document models.
+- `GemaraDocument` is the union type returned by `load` and `loads`.
+- Catalog documents share the `Catalog` base and log documents share `Log`, so
+  `isinstance(doc, Catalog)` or `isinstance(doc, Log)` narrows a dispatched
+  document to its category.
 - `SCHEMA_VERSION` is the Gemara release used to generate the models
+- `__version__` is the installed `gemara-python` distribution version.
 - Invalid input raises `GemaraError`, `UnknownDocumentTypeError`, or
   `pydantic.ValidationError`.
 - `load` and `from_file` also propagate filesystem and stream I/O exceptions.

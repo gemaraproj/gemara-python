@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import json
 import typing
+from importlib.metadata import version
 from pathlib import Path
 
 from pydantic import BaseModel
 
-from gemara.v1 import DOCUMENT_TYPES, Catalog, GemaraDocument, Log, Metadata
+from gemara.v1 import DOCUMENT_TYPES, Catalog, GemaraDocument, Log, Metadata, __version__
 from gemara.v1._document import GemaraDocumentModel
 
 SCHEMA_DIR = Path(__file__).resolve().parents[3] / "schemas"
@@ -24,6 +25,10 @@ def test_registry_has_thirteen_document_types() -> None:
     assert len(DOCUMENT_TYPES) == 13
 
 
+def test_package_version_matches_distribution_metadata() -> None:
+    assert __version__ == version("gemara-python")
+
+
 def test_every_registry_entry_is_a_model() -> None:
     for name, model in DOCUMENT_TYPES.items():
         assert issubclass(model, BaseModel), name
@@ -31,7 +36,7 @@ def test_every_registry_entry_is_a_model() -> None:
 
 
 def test_every_model_narrows_its_metadata_type() -> None:
-    """Defect 4 regression guard: dispatch depends on this narrowing."""
+    """Dispatch depends on each model's narrowed metadata type."""
     for name, model in DOCUMENT_TYPES.items():
         metadata = model.model_fields["metadata"].annotation
         assert metadata is not None
@@ -56,3 +61,13 @@ def test_log_models_share_the_log_runtime_base() -> None:
     assert "target" in Log.model_fields
     for name, model in DOCUMENT_TYPES.items():
         assert issubclass(model, Log) is name.endswith("Log")
+
+
+def test_documents_narrow_to_their_category_via_isinstance() -> None:
+    """The tier's point: a consumer narrows any dispatched document by
+    `isinstance` -- e.g. to gather every catalog's `imports` or every log's
+    `target` -- instead of re-reading `metadata.type`."""
+    for name, model in DOCUMENT_TYPES.items():
+        doc = model.model_construct()
+        assert isinstance(doc, Catalog) is name.endswith("Catalog"), name
+        assert isinstance(doc, Log) is name.endswith("Log"), name
