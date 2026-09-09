@@ -176,6 +176,7 @@ dependencies = [
 codegen = [
     { name = "datamodel-code-generator" },
     { name = "poethepoet" },
+    { name = "ruff" },
 ]
 dev = [
     { name = "datamodel-code-generator" },
@@ -187,11 +188,16 @@ dev = [
 ]
 lint = [
     { name = "mypy" },
+    { name = "poethepoet" },
     { name = "ruff" },
     { name = "types-pyyaml" },
 ]
 test = [
     { name = "pytest" },
+]
+tooling = [
+    { name = "poethepoet" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -204,6 +210,7 @@ requires-dist = [
 codegen = [
     { name = "datamodel-code-generator", specifier = "==0.76.2" },
     { name = "poethepoet", specifier = ">=0.30" },
+    { name = "ruff", specifier = "==0.16.6" },
 ]
 dev = [
     { name = "datamodel-code-generator", specifier = "==0.76.2" },
@@ -215,10 +222,15 @@ dev = [
 ]
 lint = [
     { name = "mypy", specifier = ">=2.3" },
+    { name = "poethepoet", specifier = ">=0.30" },
     { name = "ruff", specifier = "==0.16.6" },
     { name = "types-pyyaml", specifier = ">=6.0" },
 ]
 test = [{ name = "pytest", specifier = ">=8.0" }]
+tooling = [
+    { name = "poethepoet", specifier = ">=0.30" },
+    { name = "ruff", specifier = "==0.16.6" },
+]
 
 [[package]]
 name = "genson"
