@@ -5,7 +5,7 @@ from __future__ import annotations
 from importlib.metadata import version as _distribution_version
 
 from gemara.v1._loader import GemaraError, UnknownDocumentTypeError, load, loads
-from gemara.v1._models import *
+from gemara.v1._models import *  # noqa: F403
 from gemara.v1._models import __all__ as _MODEL_NAMES
 from gemara.v1._registry import DOCUMENT_TYPES, SCHEMA_VERSION, GemaraDocument
 
