@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          # The release path builds the artifacts that get published, so it must
+          # not restore a cache that a pull request workflow could have poisoned.
+          enable-cache: false
+      - run: uv sync --frozen
+      - name: Verify the tag matches the static version
+        run: |
+          # Artifacts must never ship as 0.0.0, and the tag is the only thing
+          # that should ever disagree with pyproject.toml.
+          declared="$(uv run python -c 'import tomllib,pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          tagged="${GITHUB_REF_NAME#v}"
+          test "$declared" != "0.0.0" || { echo "::error::version is 0.0.0"; exit 1; }
+          test "$declared" = "$tagged" || {
+            echo "::error::tag $tagged does not match pyproject version $declared"; exit 1; }
+      - run: uv run pytest -q
+      - name: Regenerate models from the vendored schema
+        run: uv run poe generate
+      - uses: ./.github/actions/check-generated-models
+      - run: uv run poe lint
+      - run: uv run ruff format --check .
+      - run: uv run poe typecheck
+      - run: uv build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # Trusted publishing: mint a short-lived OIDC token instead of holding a
+      # long-lived PyPI API token in repository secrets.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+
+  verify-published:
+    name: Test the PyPI package
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: false
+      - name: Wait for PyPI index propagation
+        run: sleep 60
+      - uses: ./.github/actions/verify-published-package

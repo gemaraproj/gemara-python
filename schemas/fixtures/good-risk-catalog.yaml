@@ -1,0 +1,92 @@
+metadata:
+  id: EXAMPLE-RISK-CATALOG
+  type: RiskCatalog
+  gemara-version: "1.1.0"
+  version: "1.0.0"
+  description: Example Risk Catalog for cloud-native container environments
+  author:
+    id: risk-management-team
+    name: Risk Management Team
+    type: Human
+  mapping-references:
+    - id: EXAMPLE-THREAT-CATALOG
+      title: Example Threat Catalog
+      version: "1.0.0"
+      description: Container security threat catalog
+
+title: Cloud-Native Container Risk Catalog
+
+groups:
+  - id: CAT-OPERATIONAL
+    title: Operational Risk
+    description: Risks arising from failures in internal processes, systems, or external events that affect service availability and reliability
+    appetite: Moderate
+  - id: CAT-SECURITY
+    title: Security Risk
+    description: Risks arising from unauthorized access, data breaches, or exploitation of system vulnerabilities
+    appetite: Low
+    max-severity: High
+  - id: CAT-COMPLIANCE
+    title: Compliance Risk
+    description: Risks arising from failure to comply with applicable laws, regulations, or industry standards
+    appetite: Minimal
+
+risks:
+  - id: RISK-001
+    title: Container Image Supply Chain Compromise
+    description: Third-party or base container images may contain known vulnerabilities or malicious code, leading to exploitation at runtime.
+    group: CAT-SECURITY
+    severity: High
+    rank: 2
+    owner:
+      responsible:
+        - name: Platform Engineering Lead
+          affiliation: Platform Team
+          email: platform-lead@example.org
+      accountable:
+        - name: Chief Information Security Officer
+          affiliation: Security
+          email: ciso@example.org
+    impact: Unauthorized code execution in production workloads, potential data exfiltration, and lateral movement across the cluster.
+    threats:
+      - reference-id: EXAMPLE-THREAT-CATALOG
+        entries:
+          - reference-id: THREAT-001
+
+  - id: RISK-002
+    title: Container Escape Leading to Host Compromise
+    description: Misconfigured or unpatched container runtimes may allow an attacker to escape container isolation and access the host.
+    group: CAT-SECURITY
+    severity: Critical
+    owner:
+      responsible:
+        - name: Platform Engineering Lead
+          affiliation: Platform Team
+          email: platform-lead@example.org
+      accountable:
+        - name: Chief Information Security Officer
+          affiliation: Security
+          email: ciso@example.org
+      consulted:
+        - name: Infrastructure Architect
+          affiliation: Architecture
+    impact: Full compromise of the underlying node, access to secrets, and disruption of co-located workloads.
+    threats:
+      - reference-id: EXAMPLE-THREAT-CATALOG
+        entries:
+          - reference-id: THREAT-002
+
+  - id: RISK-003
+    title: Regulatory Non-Compliance from Unaudited Deployments
+    description: Deploying workloads without automated compliance gates may result in violations of regulatory requirements.
+    group: CAT-COMPLIANCE
+    severity: Medium
+    impact: Regulatory fines, audit findings, and reputational damage.
+
+  - id: RISK-004
+    title: Cluster Admin Credential Exposure
+    description: Long-lived admin credentials for the cluster control plane may be exposed through logs, tickets, or shared stores.
+    group: CAT-SECURITY
+    severity: High
+    rank: 1
+    impact: Full cluster compromise; all workloads and secrets on the platform are at risk.

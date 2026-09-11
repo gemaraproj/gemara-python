@@ -1,0 +1,88 @@
+[build-system]
+requires = ["uv_build>=0.9.0,<0.15.0"]
+build-backend = "uv_build"
+
+[project]
+name = "gemara-python"
+version = "0.1.0"
+description = "Gemara v1 schema types as Pydantic v2 models"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.9", "pyyaml>=6.0"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/gemaraproj/gemara-python"
+Repository = "https://github.com/gemaraproj/gemara-python"
+Issues = "https://github.com/gemaraproj/gemara-python/issues"
+
+[dependency-groups]
+test = ["pytest>=8.0"]
+
+# ruff is pinned exactly because `poe generate` formats generated output with it,
+# so an unpinned bump would churn committed bytes and fail the drift gate.
+tooling = ["poethepoet>=0.30", "ruff==0.16.6"]
+
+lint = [
+    {include-group = "tooling"},
+    "mypy>=2.3",
+    "types-PyYAML>=6.0",
+]
+
+# Needed only to regenerate the models. Pinned exactly for the same reason as
+# ruff: it decides the committed bytes the drift gate compares against.
+codegen = [{include-group = "tooling"}, "datamodel-code-generator==0.76.2"]
+
+# IMPORTANT: re-vendoring the schema also needs `cue` on PATH, which is not
+# a Python dependency and cannot be declared here. See CONTRIBUTING.md.
+dev = [
+    {include-group = "test"},
+    {include-group = "lint"},
+    {include-group = "codegen"},
+]
+
+[tool.uv.build-backend]
+module-name = "gemara.v1"
+namespace = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# _models.py is generated; lint rules would only create churn against the drift gate.
+exclude = ["src/gemara/v1/_models.py"]
+
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tools", "tests"]
+mypy_path = "src:tools:tests"
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["gemara.v1._models"]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["tests", "tools"]
+
+[tool.poe.tasks]
+test = "pytest"
+lint = "ruff check ."
+format = "ruff format ."
+typecheck = "mypy"
+generate = "python tools/generate.py"
+sync-schema = "python tools/sync_schema.py"

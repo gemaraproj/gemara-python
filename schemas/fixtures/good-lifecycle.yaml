@@ -1,0 +1,44 @@
+metadata:
+  id: TEST-LIFECYCLE
+  type: ControlCatalog
+  gemara-version: "1.1.0"
+  version: "1.0.0"
+  description: Validates lifecycle states on controls and assessment requirements.
+  author:
+    id: test
+    name: Test Author
+    type: Human
+  applicability-groups:
+    - id: production
+      title: Production
+      description: Production environments.
+
+title: Lifecycle Test Catalog
+groups:
+  - id: dp
+    title: Data Protection
+    description: Data protection controls.
+
+controls:
+  - id: TC-001
+    group: dp
+    title: Encrypt Data at Rest
+    objective: Ensure all stored data is encrypted.
+    assessment-requirements:
+      - id: TC-001.AR01
+        text: The system MUST encrypt all data at rest.
+        applicability:
+          - production
+        recommendation: Use AES-256 or equivalent.
+
+  - id: TC-002
+    group: dp
+    title: Encrypt Data at Rest Using DES
+    objective: Ensure all stored data is encrypted using DES.
+    state: Retired
+    assessment-requirements:
+      - id: TC-002.AR01
+        text: The system MUST encrypt all data at rest using DES.
+        applicability:
+          - production
+        state: Retired

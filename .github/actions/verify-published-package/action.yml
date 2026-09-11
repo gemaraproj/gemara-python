@@ -1,0 +1,38 @@
+name: Verify published package
+description: Install the published package from an index and run its package-level tests.
+
+inputs:
+  index-url:
+    description: Package index URL to install from.
+    required: false
+  extra-index-url:
+    description: Additional package index URL to resolve dependencies from.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install the published package
+      shell: bash
+      env:
+        INDEX_URL: ${{ inputs.index-url }}
+        EXTRA_INDEX_URL: ${{ inputs.extra-index-url }}
+      run: |
+        version="$(python -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+        venv=.published-package-venv
+        index_args=()
+        if [[ -n "$INDEX_URL" ]]; then
+          index_args+=(--index-url "$INDEX_URL")
+        fi
+        if [[ -n "$EXTRA_INDEX_URL" ]]; then
+          index_args+=(--extra-index-url "$EXTRA_INDEX_URL")
+        fi
+        uv venv --clear "$venv"
+        uv pip install --python "$venv/bin/python" "${index_args[@]}" "gemara-python==$version" pytest
+    - name: Verify imports use the installed artifact
+      shell: bash
+      run: |
+        .published-package-venv/bin/python -c 'import gemara.v1, pathlib; assert pathlib.Path(gemara.v1.__file__).is_relative_to(pathlib.Path.cwd() / ".published-package-venv")'
+    - name: Run tests against the published package
+      shell: bash
+      run: .published-package-venv/bin/python -m pytest -q tests/gemara/v1/test_loader.py tests/gemara/v1/test_registry.py tests/test_fixtures.py

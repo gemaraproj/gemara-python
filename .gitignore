@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Superpowers spec artifacts (local design docs, not tracked)
+docs/superpowers/
+
+# Superpowers SDD workspace (scratch, not tracked)
+.superpowers/

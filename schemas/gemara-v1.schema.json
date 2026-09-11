@@ -1,0 +1,2988 @@
+{
+  "$defs": {
+    "AcceptedMethod": {
+      "additionalProperties": false,
+      "description": "AcceptedMethod defines a method for evaluation or enforcement.",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "executor": {
+          "$ref": "#/$defs/Actor"
+        },
+        "id": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/ModeType"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "type": {
+          "$ref": "#/$defs/MethodType"
+        }
+      },
+      "required": [
+        "id",
+        "mode",
+        "type"
+      ],
+      "type": "object"
+    },
+    "AcceptedRisk": {
+      "additionalProperties": false,
+      "description": "AcceptedRisk documents a risk the organization has chosen to accept,\noptionally linking it to a mitigated risk when the acceptance covers\nresidual risk after partial mitigation.",
+      "properties": {
+        "id": {
+          "description": "id allows this accepted risk entry to be referenced",
+          "type": "string"
+        },
+        "justification": {
+          "description": "justification explains why the risk is accepted",
+          "type": "string"
+        },
+        "risk": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "risk references the risk being accepted"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope",
+          "description": "scope defines where the risk acceptance applies"
+        },
+        "target-id": {
+          "description": "target-id optionally links this acceptance to a mitigated risk entry",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "risk"
+      ],
+      "type": "object"
+    },
+    "ActionResult": {
+      "additionalProperties": false,
+      "description": "ActionResult captures a performed enforcement action.",
+      "properties": {
+        "disposition": {
+          "$ref": "#/$defs/Disposition",
+          "description": "disposition is the enforcement action taken"
+        },
+        "end": {
+          "$ref": "#/$defs/Datetime",
+          "description": "end is the timestamp when the enforcement action concluded"
+        },
+        "justification": {
+          "$ref": "#/$defs/Justification",
+          "description": "justification links the action to its assessment findings and any applicable exceptions"
+        },
+        "message": {
+          "description": "message provides additional context about the action",
+          "type": "string"
+        },
+        "method": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "method references the specific AcceptedMethod entry within the Policy being enforced"
+        },
+        "start": {
+          "$ref": "#/$defs/Datetime",
+          "description": "start is the timestamp when the enforcement action began"
+        },
+        "steps": {
+          "description": "steps references the code paths or addresses that carried out this enforcement action",
+          "items": {
+            "$ref": "#/$defs/EnforcementStep"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/EnforcementStep"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "disposition",
+        "justification",
+        "method",
+        "start",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "Actor": {
+      "$ref": "#/$defs/Entity",
+      "additionalProperties": false,
+      "description": "Actor represents an entity (human or tool) that performs actions in evaluations",
+      "properties": {
+        "contact": {
+          "$ref": "#/$defs/Contact",
+          "description": "contact is contact information for the actor"
+        }
+      },
+      "type": "object"
+    },
+    "Adherence": {
+      "additionalProperties": false,
+      "description": "Adherence defines evaluation methods, assessment plans, enforcement methods, and non-compliance notifications.",
+      "properties": {
+        "assessment-plans": {
+          "items": {
+            "$ref": "#/$defs/AssessmentPlan"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AssessmentPlan"
+            }
+          ],
+          "type": "array"
+        },
+        "enforcement-methods": {
+          "items": {
+            "$ref": "#/$defs/AcceptedMethod",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "$ref": "#/$defs/EnforcementMethodType"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AcceptedMethod",
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "$ref": "#/$defs/EnforcementMethodType"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "array"
+        },
+        "evaluation-methods": {
+          "items": {
+            "$ref": "#/$defs/AcceptedMethod",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "$ref": "#/$defs/EvaluationMethodType"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AcceptedMethod",
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "$ref": "#/$defs/EvaluationMethodType"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "array"
+        },
+        "non-compliance": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ArtifactMapping": {
+      "additionalProperties": false,
+      "description": "ArtifactMapping represents a mapping to an external artifact or artifact entry",
+      "properties": {
+        "reference-id": {
+          "description": "reference-id identifies an element from a MappingReference in the artifact's metadata",
+          "type": "string"
+        },
+        "remarks": {
+          "description": "remarks is prose regarding the mapped artifact or the mapping relationship",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference-id"
+      ],
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "ArtifactType identifies the kind of Gemara artifact for unambiguous parsing",
+      "enum": [
+        "CapabilityCatalog",
+        "ControlCatalog",
+        "GuidanceCatalog",
+        "ThreatCatalog",
+        "RiskCatalog",
+        "Policy",
+        "MappingDocument",
+        "Lexicon",
+        "EvaluationLog",
+        "EnforcementLog",
+        "VectorCatalog",
+        "PrincipleCatalog",
+        "AuditLog"
+      ]
+    },
+    "AssessmentFinding": {
+      "additionalProperties": false,
+      "description": "AssessmentFinding maps an enforcement action to its originating assessment data across Layer 2, Layer 3, and Layer 5.",
+      "properties": {
+        "log": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "log maps to the EvaluationLog entry containing the finding"
+        },
+        "plan": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "plan maps to the Policy assessment plan that was executed"
+        },
+        "requirement": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "requirement maps to the Layer 2 assessment requirement that was evaluated"
+        },
+        "result": {
+          "$ref": "#/$defs/Result",
+          "description": "result is the assessment outcome that triggered the enforcement action"
+        }
+      },
+      "required": [
+        "log",
+        "result"
+      ],
+      "type": "object"
+    },
+    "AssessmentLog": {
+      "additionalProperties": false,
+      "description": "AssessmentLog contains the results of executing a single assessment procedure for a control requirement.",
+      "properties": {
+        "applicability": {
+          "description": "Applicability is elevated from the Layer 2 Assessment Requirement to aid in execution and reporting.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "confidence-level": {
+          "$ref": "#/$defs/ConfidenceLevel",
+          "description": "ConfidenceLevel indicates the evaluator's confidence level in this specific assessment result."
+        },
+        "description": {
+          "description": "Description provides a summary of the assessment procedure.",
+          "type": "string"
+        },
+        "end": {
+          "$ref": "#/$defs/Datetime",
+          "description": "End is the timestamp when the assessment concluded."
+        },
+        "evidence": {
+          "description": "Evidence records the raw data cited to support this assessment's opinion.",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Evidence"
+            }
+          ],
+          "type": "array"
+        },
+        "message": {
+          "description": "Message provides additional context about the assessment result.",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "Plan maps to the policy assessment plan being executed."
+        },
+        "recommendation": {
+          "description": "Recommendation provides guidance on how to address a failed assessment.",
+          "type": "string"
+        },
+        "requirement": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "Requirement should map to the assessment requirement for this assessment."
+        },
+        "result": {
+          "$ref": "#/$defs/Result",
+          "description": "Result is the overall outcome of the assessment procedure, matching the result of the last step that was run."
+        },
+        "start": {
+          "$ref": "#/$defs/Datetime",
+          "description": "Start is the timestamp when the assessment began.\nAssessments that never executed have no start time to record."
+        },
+        "steps": {
+          "description": "Steps are sequential actions taken as part of the assessment, which may halt the assessment if a failure occurs.",
+          "items": {
+            "$ref": "#/$defs/AssessmentStep"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AssessmentStep"
+            }
+          ],
+          "type": "array"
+        },
+        "steps-executed": {
+          "description": "Steps-executed is the number of steps that were executed as part of the assessment.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "applicability",
+        "description",
+        "message",
+        "requirement",
+        "result",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "AssessmentPlan": {
+      "additionalProperties": false,
+      "description": "AssessmentPlan defines how a specific assessment requirement is evaluated.",
+      "properties": {
+        "evaluation-methods": {
+          "items": {
+            "$ref": "#/$defs/AcceptedMethod",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "$ref": "#/$defs/EvaluationMethodType"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AcceptedMethod",
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "$ref": "#/$defs/EvaluationMethodType"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "type": "object"
+            }
+          ],
+          "type": "array"
+        },
+        "evidence-requirements": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/Parameter"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Parameter"
+            }
+          ],
+          "type": "array"
+        },
+        "requirement-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation-methods",
+        "frequency",
+        "id",
+        "requirement-id"
+      ],
+      "type": "object"
+    },
+    "AssessmentRequirement": {
+      "additionalProperties": false,
+      "description": "AssessmentRequirement describes a tightly scoped, verifiable condition that must be satisfied and confirmed by an evaluator",
+      "properties": {
+        "applicability": {
+          "description": "applicability is a list of strings describing the situations where this text functions as a requirement for its parent control",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "recommendation": {
+          "description": "recommendation provides readers with non-binding suggestions to aid in evaluation or enforcement of the requirement",
+          "type": "string"
+        },
+        "replaced-by": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "replaced-by references the assessment requirement that supersedes this one when deprecated or retired"
+        },
+        "state": {
+          "$ref": "#/$defs/Lifecycle",
+          "description": "state is the lifecycle state of this assessment requirement"
+        },
+        "text": {
+          "description": "text is the body of the requirement, typically written as a MUST condition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "applicability",
+        "id",
+        "text"
+      ],
+      "type": "object"
+    },
+    "AssessmentRequirementModifier": {
+      "additionalProperties": false,
+      "description": "AssessmentRequirementModifier allows organizations to customize assessment requirements based on how an organization wants to gather evidence for the objective.",
+      "properties": {
+        "applicability": {
+          "description": "The updated applicability of the assessment requirement",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modification-rationale": {
+          "type": "string"
+        },
+        "modification-type": {
+          "$ref": "#/$defs/ModType"
+        },
+        "recommendation": {
+          "description": "The updated recommendation for the assessment requirement",
+          "type": "string"
+        },
+        "target-id": {
+          "type": "string"
+        },
+        "text": {
+          "description": "The updated text of the assessment requirement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "modification-rationale",
+        "modification-type",
+        "target-id"
+      ],
+      "type": "object"
+    },
+    "AssessmentStep": {
+      "type": "string"
+    },
+    "AuditLog": {
+      "$ref": "#/$defs/Log",
+      "additionalProperties": false,
+      "description": "AuditLog records results from an audit performed against a target resource",
+      "properties": {
+        "criteria": {
+          "description": "criteria defines the acceptable state for the audited resource",
+          "items": {
+            "$ref": "#/$defs/ArtifactMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/ArtifactMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "AuditLog"
+            }
+          },
+          "type": "object"
+        },
+        "owner": {
+          "$ref": "#/$defs/RACI",
+          "description": "owner defines the RACI roles responsible for managing the audit"
+        },
+        "results": {
+          "description": "results records audit results against the criteria",
+          "items": {
+            "$ref": "#/$defs/AuditResult"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AuditResult"
+            }
+          ],
+          "type": "array"
+        },
+        "summary": {
+          "description": "summary provides the high-level conclusion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "criteria",
+        "results",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "AuditResult": {
+      "additionalProperties": false,
+      "description": "AuditResult records a single result with supporting evidence and recommendations.",
+      "properties": {
+        "criteria-reference": {
+          "$ref": "#/$defs/MultiEntryMapping",
+          "description": "criteria-reference maps this result to specific criteria entries"
+        },
+        "description": {
+          "description": "description explains the result in detail",
+          "type": "string"
+        },
+        "evidence": {
+          "description": "evidence records the data sources that support this result",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Evidence"
+            }
+          ],
+          "type": "array"
+        },
+        "id": {
+          "description": "id uniquely identifies this result",
+          "type": "string"
+        },
+        "recommendations": {
+          "description": "recommendations records corrective actions for this result",
+          "items": {
+            "$ref": "#/$defs/Recommendation"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Recommendation"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title describes this result at a glance",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ResultType",
+          "description": "type classifies the nature of this result"
+        }
+      },
+      "required": [
+        "criteria-reference",
+        "description",
+        "id",
+        "title",
+        "type"
+      ],
+      "type": "object"
+    },
+    "Capability": {
+      "additionalProperties": false,
+      "description": "Capability describes a system capability such as a feature, component or object.",
+      "properties": {
+        "description": {
+          "description": "description provides a detailed overview of this capability",
+          "type": "string"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this capability belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes this capability at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "group",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "CapabilityCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "CapabilityCatalog describes a collection of system capabilities",
+      "properties": {
+        "capabilities": {
+          "description": "capabilities is a list of capabilities defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Capability"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "CapabilityCatalog"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "Catalog": {
+      "additionalProperties": false,
+      "description": "Catalog describes a set of topically-associated entries",
+      "properties": {
+        "extends": {
+          "description": "extends references catalogs that this catalog builds upon",
+          "items": {
+            "$ref": "#/$defs/ArtifactMapping"
+          },
+          "type": "array"
+        },
+        "groups": {
+          "description": "groups contains a list of groups that can be referenced by entries in this catalog",
+          "items": {
+            "$ref": "#/$defs/Group"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Group"
+            }
+          ],
+          "type": "array"
+        },
+        "imports": {
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "description": "metadata provides detailed data about this catalog"
+        },
+        "title": {
+          "description": "title describes the purpose of this catalog at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metadata",
+        "title"
+      ],
+      "type": "object"
+    },
+    "CatalogImport": {
+      "additionalProperties": false,
+      "description": "CatalogImport defines how to import control catalogs with optional exclusions, constraints, and assessment requirement modifications.",
+      "properties": {
+        "assessment-requirement-modifications": {
+          "items": {
+            "$ref": "#/$defs/AssessmentRequirementModifier"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AssessmentRequirementModifier"
+            }
+          ],
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "$ref": "#/$defs/Constraint"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Constraint"
+            }
+          ],
+          "type": "array"
+        },
+        "exclusions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "reference-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference-id"
+      ],
+      "type": "object"
+    },
+    "ConfidenceLevel": {
+      "description": "ConfidenceLevel indicates the evaluator's confidence level in an assessment result.",
+      "enum": [
+        "Undetermined",
+        "Low",
+        "Medium",
+        "High"
+      ]
+    },
+    "Constraint": {
+      "additionalProperties": false,
+      "description": "Constraint defines a prescriptive requirement that applies to a specific guidance or control.",
+      "properties": {
+        "id": {
+          "description": "Unique ID for this constraint to enable Layer 5/6 tracking",
+          "type": "string"
+        },
+        "target-id": {
+          "description": "Links to the specific Guidance or Control being constrained",
+          "type": "string"
+        },
+        "text": {
+          "description": "The prescriptive requirement/constraint text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "target-id",
+        "text"
+      ],
+      "type": "object"
+    },
+    "Contact": {
+      "additionalProperties": false,
+      "description": "Contact is the contact information for a person or group",
+      "properties": {
+        "affiliation": {
+          "description": "affiliation is the organization with which the contact entity is associated, such as a team, school, or employer",
+          "type": "string"
+        },
+        "email": {
+          "$ref": "#/$defs/Email",
+          "description": "email is the preferred email address to reach the contact"
+        },
+        "name": {
+          "description": "name is the preferred descriptor for the contact entity",
+          "type": "string"
+        },
+        "social": {
+          "description": "social is a social media handle or other profile for the contact, such as GitHub",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "Control": {
+      "additionalProperties": false,
+      "description": "Control describes a safeguard or countermeasure with a clear objective and assessment requirements",
+      "properties": {
+        "assessment-requirements": {
+          "description": "assessment-requirements is a list of requirements that must be verified to confirm the control objective has been met",
+          "items": {
+            "$ref": "#/$defs/AssessmentRequirement"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AssessmentRequirement"
+            }
+          ],
+          "type": "array"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this control belongs to",
+          "type": "string"
+        },
+        "guidelines": {
+          "description": "guidelines documents relationships between this control and Layer 1 guideline artifacts",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "objective": {
+          "description": "objective is a unified statement of intent, which may encompass multiple situationally applicable requirements",
+          "type": "string"
+        },
+        "replaced-by": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "replaced-by references the control that supersedes this one when deprecated or retired"
+        },
+        "state": {
+          "$ref": "#/$defs/Lifecycle",
+          "description": "state is the lifecycle state of this control"
+        },
+        "threats": {
+          "description": "threats documents relationships between this control and Layer 2 threat artifacts",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title describes the purpose of this control at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assessment-requirements",
+        "group",
+        "id",
+        "objective",
+        "title"
+      ],
+      "type": "object"
+    },
+    "ControlCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "ControlCatalog describes a set of related controls and relevant metadata",
+      "properties": {
+        "controls": {
+          "description": "controls is a list of unique controls defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Control"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Control"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "ControlCatalog"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ControlEvaluation": {
+      "additionalProperties": false,
+      "description": "ControlEvaluation contains the results of evaluating a single Layer 5 control.",
+      "properties": {
+        "assessment-logs": {
+          "allOf": [
+            {
+              "description": "Enforce that control reference and the assessments' references match\nThis formulation uses the control's reference if the assessment doesn't include a reference",
+              "items": {
+                "properties": {
+                  "requirement": {
+                    "properties": {
+                      "reference-id": {
+                        "$ref": "#/$defs/reference-id"
+                      }
+                    },
+                    "required": [
+                      "reference-id"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "requirement"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "description": "Require start timestamp on assessments that actually executed",
+              "items": {
+                "$ref": "#/$defs/_AssessmentLogStrict"
+              },
+              "minItems": 1,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/_AssessmentLogStrict"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/AssessmentLog"
+              },
+              "minItems": 1,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/AssessmentLog"
+                }
+              ],
+              "type": "array"
+            }
+          ],
+          "description": "Enforce that control reference and the assessments' references match\nThis formulation uses the control's reference if the assessment doesn't include a reference\n\nRequire start timestamp on assessments that actually executed"
+        },
+        "control": {
+          "$ref": "#/$defs/EntryMapping"
+        },
+        "message": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "result": {
+          "$ref": "#/$defs/Result"
+        }
+      },
+      "required": [
+        "assessment-logs",
+        "control",
+        "message",
+        "name",
+        "result"
+      ],
+      "type": "object"
+    },
+    "Datetime": {
+      "description": "Datetime represents an ISO 8601 formatted datetime string",
+      "format": "date-time",
+      "type": "string"
+    },
+    "Dimensions": {
+      "additionalProperties": false,
+      "description": "Dimensions specify the applicability criteria for a policy",
+      "properties": {
+        "geopolitical": {
+          "description": "geopolitical is an optional list of geopolitical regions",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "groups": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "sensitivity": {
+          "description": "sensitivity is an optional list of data classification levels",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "technologies": {
+          "description": "technologies is an optional list of technology categories or services",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "users": {
+          "description": "users is an optional list of user roles",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Disposition": {
+      "description": "Disposition enumerates the possible enforcement outcomes.",
+      "enum": [
+        "Undetermined",
+        "Enforced",
+        "Tolerated",
+        "Clear"
+      ]
+    },
+    "Email": {
+      "description": "Email represents a validated email address pattern",
+      "pattern": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+      "type": "string"
+    },
+    "EnforcementLog": {
+      "$ref": "#/$defs/Log",
+      "additionalProperties": false,
+      "description": "EnforcementLog records actions taken in response to noncompliance findings from Layer 5 evaluations.",
+      "properties": {
+        "actions": {
+          "allOf": [
+            {
+              "description": "Enforce that Clear dispositions only contain Passed assessment results",
+              "type": "array"
+            },
+            {
+              "description": "actions is the list of enforcement actions performed",
+              "items": {
+                "$ref": "#/$defs/ActionResult"
+              },
+              "minItems": 1,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/ActionResult"
+                }
+              ],
+              "type": "array"
+            }
+          ],
+          "description": "actions is the list of enforcement actions performed\n\nEnforce that Clear dispositions only contain Passed assessment results"
+        },
+        "disposition": {
+          "$ref": "#/$defs/Disposition",
+          "description": "disposition is the aggregate enforcement disposition across all actions in this log"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "EnforcementLog"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "actions",
+        "disposition"
+      ],
+      "type": "object"
+    },
+    "EnforcementMethodType": {
+      "enum": [
+        "Gate",
+        "Remediation"
+      ]
+    },
+    "EnforcementStep": {
+      "description": "EnforcementStep is a reference to the code that performed an enforcement action",
+      "type": "string"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "description": "Entity represents a human or tool",
+      "properties": {
+        "description": {
+          "description": "description provides additional context about the entity",
+          "type": "string"
+        },
+        "id": {
+          "description": "id uniquely identifies the entity and allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "name": {
+          "description": "name is the name of the entity",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/EntityType",
+          "description": "type specifies the type of entity interacting in the workflow"
+        },
+        "uri": {
+          "description": "uri is a general URI for the entity information",
+          "pattern": "^https?://[^\\s]+$",
+          "type": "string"
+        },
+        "version": {
+          "description": "version is the version of the entity (for tools; if applicable)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type"
+      ],
+      "type": "object"
+    },
+    "EntityType": {
+      "description": "EntityType specifies what entity is interacting in the workflow",
+      "enum": [
+        "Human",
+        "Software",
+        "Software Assisted"
+      ]
+    },
+    "EntryMapping": {
+      "additionalProperties": false,
+      "description": "EntryMapping represents how a specific entry maps to a MappingReference.",
+      "properties": {
+        "entry-id": {
+          "description": "entry-id is the identifier being mapped to in the referenced artifact",
+          "type": "string"
+        },
+        "reference-id": {
+          "description": "reference-id is the id for a MappingReference entry in the artifact's metadata",
+          "type": "string"
+        },
+        "remarks": {
+          "description": "remarks is prose describing the mapping relationship",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entry-id",
+        "reference-id"
+      ],
+      "type": "object"
+    },
+    "EntryType": {
+      "description": "EntryType enumerates the atomic units within Gemara artifacts that can participate in mappings",
+      "enum": [
+        "Guideline",
+        "Statement",
+        "Control",
+        "AssessmentRequirement",
+        "Capability",
+        "Threat",
+        "Risk",
+        "Vector",
+        "Principle"
+      ]
+    },
+    "EvaluationLog": {
+      "$ref": "#/$defs/Log",
+      "additionalProperties": false,
+      "description": "EvaluationLog contains the results of evaluating a set of Layer 2 controls.",
+      "properties": {
+        "evaluations": {
+          "items": {
+            "$ref": "#/$defs/ControlEvaluation"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/ControlEvaluation"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "EvaluationLog"
+            }
+          },
+          "type": "object"
+        },
+        "result": {
+          "$ref": "#/$defs/Result",
+          "description": "result is the aggregate outcome across all evaluations in this log"
+        }
+      },
+      "required": [
+        "evaluations",
+        "result"
+      ],
+      "type": "object"
+    },
+    "EvaluationMethodType": {
+      "enum": [
+        "Intent",
+        "Behavioral"
+      ]
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "Evidence records what was cited to support an opinion for a specific activity:\nraw data for the evaluation layer, evaluation and enforcement artifacts for the audit layer.\nAt least one of payload or source MUST be present; an entry with neither is semantically incomplete.",
+      "properties": {
+        "collected-at": {
+          "$ref": "#/$defs/Datetime",
+          "description": "collected-at is the timestamp when the evidence was gathered"
+        },
+        "description": {
+          "description": "description explains what this evidence represents",
+          "type": "string"
+        },
+        "id": {
+          "description": "id uniquely identifies this evidence",
+          "type": "string"
+        },
+        "payload": {
+          "description": "payload is the raw evidence data collected inline"
+        },
+        "source": {
+          "$ref": "#/$defs/EvidenceMapping",
+          "description": "source identifies the artifact or system from which this evidence was collected"
+        },
+        "type": {
+          "$ref": "#/$defs/EvidenceType",
+          "description": "type categorizes the kind of evidence"
+        }
+      },
+      "required": [
+        "collected-at",
+        "id",
+        "type"
+      ],
+      "type": "object"
+    },
+    "EvidenceMapping": {
+      "additionalProperties": false,
+      "description": "EvidenceMapping identifies the source from which evidence was collected.\nreference-id names the MappingReference; coordinate or entry-id gives\nspecificity within it; digest pins the observed content at collection time.",
+      "properties": {
+        "coordinate": {
+          "description": "coordinate is the precise location within the stream identified by reference-id\n(e.g. an API path, file path, or JSON path expression).\nDo not set if entry-id is set.",
+          "type": "string"
+        },
+        "digest": {
+          "description": "digest is a cryptographic hash of the observed content at collection time; format: algorithm:encoded (e.g. sha256:abc123...)",
+          "pattern": "^[a-z0-9]+(?:[+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$",
+          "type": "string"
+        },
+        "entry-id": {
+          "description": "entry-id identifies a specific entry within a referenced Gemara artifact.\nDo not set if coordinate is set.",
+          "type": "string"
+        },
+        "reference-id": {
+          "description": "reference-id ties this evidence to a mapping-reference in the artifact's metadata",
+          "type": "string"
+        },
+        "remarks": {
+          "description": "remarks is prose regarding this evidence reference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference-id"
+      ],
+      "type": "object"
+    },
+    "EvidenceType": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "EvidenceType categorizes the kind of evidence. It remains an open enum:\nrecommended values include artifact types already known to Gemara (e.g.\nEvaluationLog, EnforcementLog) plus categories for common evidence forms."
+    },
+    "Exemption": {
+      "additionalProperties": false,
+      "description": "Exemption describes a single scenario where the catalog is not applicable",
+      "properties": {
+        "description": {
+          "description": "description identifies who or what is exempt from the full guidance",
+          "type": "string"
+        },
+        "reason": {
+          "description": "reason explains why the exemption is granted",
+          "type": "string"
+        },
+        "redirect": {
+          "$ref": "#/$defs/MultiEntryMapping",
+          "description": "redirect points to alternative guidelines or controls that should be followed instead"
+        }
+      },
+      "required": [
+        "description",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "Group": {
+      "additionalProperties": false,
+      "description": "Group represents a classification or grouping that can be used in different contexts with semantic meaning derived from its usage",
+      "properties": {
+        "description": {
+          "description": "description explains the significance and traits of entries to this group",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes the purpose of this group at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "GuidanceCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "GuidanceCatalog represents a concerted documentation effort to help bring about an optimal future without foreknowledge of the implementation details",
+      "properties": {
+        "exemptions": {
+          "description": "exemptions provides information about situations where this guidance is not applicable",
+          "items": {
+            "$ref": "#/$defs/Exemption"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Exemption"
+            }
+          ],
+          "type": "array"
+        },
+        "front-matter": {
+          "description": "front-matter provides introductory text for the document to be used during rendering",
+          "type": "string"
+        },
+        "guidelines": {
+          "description": "guidelines is a list of unique guidelines defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Guideline"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Guideline"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "GuidanceCatalog"
+            }
+          },
+          "type": "object"
+        },
+        "type": {
+          "$ref": "#/$defs/GuidanceType",
+          "description": "type categorizes this document based on the intent of its contents"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "GuidanceImport": {
+      "additionalProperties": false,
+      "description": "GuidanceImport defines how to import guidance documents with optional exclusions and constraints.",
+      "properties": {
+        "constraints": {
+          "description": "Constraints allow policy authors to define ad hoc minimum requirements (e.g., \"review at least annually\").",
+          "items": {
+            "$ref": "#/$defs/Constraint"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Constraint"
+            }
+          ],
+          "type": "array"
+        },
+        "exclusions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "reference-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference-id"
+      ],
+      "type": "object"
+    },
+    "GuidanceType": {
+      "description": "GuidanceType restricts the possible types that a catalog may be listed as",
+      "enum": [
+        "Standard",
+        "Regulation",
+        "Best Practice",
+        "Framework"
+      ]
+    },
+    "Guideline": {
+      "additionalProperties": false,
+      "description": "Guideline provides explanatory context and recommendations for designing optimal outcomes",
+      "properties": {
+        "applicability": {
+          "description": "applicability specifies the contexts in which this guideline applies",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "extends": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "extends is an id for a guideline which this guideline adds to, in this document or elsewhere"
+        },
+        "group": {
+          "description": "group provides an id to the group that this guideline belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "objective": {
+          "description": "objective is a unified statement of intent, which may encompass multiple situationally applicable statements",
+          "type": "string"
+        },
+        "principles": {
+          "description": "principles documents the relationship between this guideline and one or more principles",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "rationale": {
+          "$ref": "#/$defs/Rationale",
+          "description": "rationale provides the context for this guideline"
+        },
+        "recommendations": {
+          "description": "recommendations is a list of non-binding suggestions to aid in evaluation or enforcement of the guideline",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "replaced-by": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "replaced-by references the guideline that supersedes this one when deprecated or retired"
+        },
+        "see-also": {
+          "description": "see-also lists related guideline IDs within the same GuidanceCatalog",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/Lifecycle",
+          "description": "state is the lifecycle state of this guideline"
+        },
+        "statements": {
+          "description": "statements is a list of structural sub-requirements within a guideline",
+          "items": {
+            "$ref": "#/$defs/Statement"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Statement"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title describes the contents of this guideline",
+          "type": "string"
+        },
+        "vectors": {
+          "description": "vector-mappings documents the relationship between this guideline and one or more vectors",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "group",
+        "id",
+        "objective",
+        "title"
+      ],
+      "type": "object"
+    },
+    "ImplementationDetails": {
+      "additionalProperties": false,
+      "description": "ImplementationDetails specifies the timeline for policy implementation.",
+      "properties": {
+        "end": {
+          "$ref": "#/$defs/Datetime"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/$defs/Datetime"
+        }
+      },
+      "required": [
+        "notes",
+        "start"
+      ],
+      "type": "object"
+    },
+    "ImplementationPlan": {
+      "additionalProperties": false,
+      "description": "ImplementationPlan defines when and how the policy becomes active.",
+      "properties": {
+        "enforcement-timeline": {
+          "$ref": "#/$defs/ImplementationDetails"
+        },
+        "evaluation-timeline": {
+          "$ref": "#/$defs/ImplementationDetails"
+        },
+        "notification-process": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enforcement-timeline",
+        "evaluation-timeline"
+      ],
+      "type": "object"
+    },
+    "Imports": {
+      "additionalProperties": false,
+      "description": "Imports defines external policies, controls, and guidelines required by this policy.",
+      "properties": {
+        "catalogs": {
+          "items": {
+            "$ref": "#/$defs/CatalogImport"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/CatalogImport"
+            }
+          ],
+          "type": "array"
+        },
+        "guidance": {
+          "items": {
+            "$ref": "#/$defs/GuidanceImport"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/GuidanceImport"
+            }
+          ],
+          "type": "array"
+        },
+        "policies": {
+          "items": {
+            "$ref": "#/$defs/ArtifactMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/ArtifactMapping"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Justification": {
+      "additionalProperties": false,
+      "description": "Justification provides the assessment data and exception references that justify an enforcement action.",
+      "properties": {
+        "assessments": {
+          "description": "assessments links the action to one or more Assessment Findings",
+          "items": {
+            "$ref": "#/$defs/AssessmentFinding"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AssessmentFinding"
+            }
+          ],
+          "type": "array"
+        },
+        "exceptions": {
+          "description": "exceptions references approved Policy exceptions that authorize the action",
+          "items": {
+            "$ref": "#/$defs/ArtifactMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/ArtifactMapping"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "assessments"
+      ],
+      "type": "object"
+    },
+    "Lexicon": {
+      "additionalProperties": false,
+      "description": "Lexicon is a controlled vocabulary or glossary artifact referenced by Metadata.lexicon",
+      "properties": {
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "additionalProperties": false,
+          "description": "metadata provides detailed data about this document",
+          "properties": {
+            "type": {
+              "const": "Lexicon"
+            }
+          },
+          "type": "object"
+        },
+        "terms": {
+          "description": "terms is one or more defined entries for linking and rendering",
+          "items": {
+            "$ref": "#/$defs/LexiconTerm"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/LexiconTerm"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title describes the purpose of this lexicon at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metadata",
+        "terms",
+        "title"
+      ],
+      "type": "object"
+    },
+    "LexiconReference": {
+      "additionalProperties": false,
+      "description": "LexiconReference cites a source supporting a lexicon definition",
+      "properties": {
+        "citation": {
+          "description": "citation identifies the source material in prose",
+          "type": "string"
+        },
+        "url": {
+          "description": "url points to supporting material when available",
+          "pattern": "^(https?|file)://[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "citation"
+      ],
+      "type": "object"
+    },
+    "LexiconTerm": {
+      "additionalProperties": false,
+      "description": "LexiconTerm is a single definition within a lexicon",
+      "properties": {
+        "definition": {
+          "description": "definition explains the meaning of the term",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced for anchors and tooling",
+          "type": "string"
+        },
+        "references": {
+          "description": "references cites external authorities supporting the definition",
+          "items": {
+            "$ref": "#/$defs/LexiconReference"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/LexiconReference"
+            }
+          ],
+          "type": "array"
+        },
+        "synonyms": {
+          "description": "synonyms lists alternative labels that should resolve to this term for linking",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title is the canonical name of the defined concept",
+          "type": "string"
+        }
+      },
+      "required": [
+        "definition",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "Lifecycle": {
+      "description": "Lifecycle represents the lifecycle state of a guideline, control, or assessment requirement",
+      "enum": [
+        "Active",
+        "Draft",
+        "Deprecated",
+        "Retired"
+      ]
+    },
+    "Log": {
+      "additionalProperties": false,
+      "description": "Log describes a set of recorded entries from a measurement activity",
+      "properties": {
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "description": "metadata provides detailed data about this log"
+        },
+        "target": {
+          "$ref": "#/$defs/Resource",
+          "description": "target identifies the resource being evaluated"
+        }
+      },
+      "required": [
+        "metadata",
+        "target"
+      ],
+      "type": "object"
+    },
+    "Mapping": {
+      "additionalProperties": false,
+      "description": "Mapping represents a relationship between a source entry and one or more target entries",
+      "properties": {
+        "id": {
+          "description": "id allows this mapping to be referenced by other elements",
+          "type": "string"
+        },
+        "relationship": {
+          "$ref": "#/$defs/RelationshipType",
+          "description": "relationship describes the nature of the mapping between source and all targets"
+        },
+        "remarks": {
+          "description": "remarks is general prose regarding this mapping",
+          "type": "string"
+        },
+        "source": {
+          "description": "source identifies the entry being mapped from by its entry-id",
+          "type": "string"
+        },
+        "targets": {
+          "description": "targets identifies the entries being mapped to; absent when relationship is no-match",
+          "items": {
+            "$ref": "#/$defs/MappingTarget"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MappingTarget"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "relationship",
+        "source"
+      ],
+      "type": "object"
+    },
+    "MappingDocument": {
+      "additionalProperties": false,
+      "description": "MappingDocument captures the user's intent for how entries in a source artifact relate to entries in a target artifact",
+      "properties": {
+        "mappings": {
+          "description": "mappings is one or more atomic relationships between entries in the referenced artifacts",
+          "items": {
+            "$ref": "#/$defs/_MappingStrict"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/_MappingStrict"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "additionalProperties": false,
+          "description": "metadata provides detailed data about this document",
+          "properties": {
+            "mapping-references": {
+              "items": {
+                "$ref": "#/$defs/MappingReference"
+              },
+              "minItems": 1,
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/MappingReference"
+                }
+              ],
+              "type": "array"
+            },
+            "type": {
+              "const": "MappingDocument"
+            }
+          },
+          "required": [
+            "mapping-references"
+          ],
+          "type": "object"
+        },
+        "remarks": {
+          "description": "remarks is prose regarding this mapping document",
+          "type": "string"
+        },
+        "source-reference": {
+          "$ref": "#/$defs/TypedMapping",
+          "description": "source-reference identifies the artifact being mapped from; must match a mapping-reference id"
+        },
+        "target-reference": {
+          "$ref": "#/$defs/TypedMapping",
+          "description": "target-reference identifies the artifact being mapped to; must match a mapping-reference id"
+        },
+        "title": {
+          "description": "title describes the purpose of this mapping document at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mappings",
+        "metadata",
+        "source-reference",
+        "target-reference",
+        "title"
+      ],
+      "type": "object"
+    },
+    "MappingReference": {
+      "additionalProperties": false,
+      "description": "MappingReference represents a reference to an external document with full metadata.",
+      "properties": {
+        "description": {
+          "description": "description is prose regarding the artifact's purpose or content",
+          "type": "string"
+        },
+        "id": {
+          "description": "id identifies this mapping reference within the artifact and, when url\nis absent, the referenced artifact's metadata.id.",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes the purpose of this mapping reference at a glance",
+          "type": "string"
+        },
+        "url": {
+          "description": "url is the path where the artifact may be retrieved; preferably responds with Gemara-compatible YAML/JSON",
+          "pattern": "^(https?|file)://[^\\s]+$",
+          "type": "string"
+        },
+        "version": {
+          "description": "version is the version identifier of the artifact being mapped to",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "version"
+      ],
+      "type": "object"
+    },
+    "MappingTarget": {
+      "additionalProperties": false,
+      "description": "MappingTarget identifies a target entry with optional per-target metadata",
+      "properties": {
+        "applicability": {
+          "description": "applicability constrains the contexts in which this target mapping holds",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "confidence-level": {
+          "$ref": "#/$defs/ConfidenceLevel"
+        },
+        "entry-id": {
+          "description": "entry-id identifies the specific entry in the target artifact",
+          "type": "string"
+        },
+        "rationale": {
+          "description": "rationale explains why this relationship exists for this target",
+          "type": "string"
+        },
+        "remarks": {
+          "description": "remarks is general prose regarding this target mapping",
+          "type": "string"
+        },
+        "strength": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            }
+          ],
+          "description": "strength is the author's estimate of how completely the source satisfies this target; range 1-10"
+        }
+      },
+      "required": [
+        "entry-id"
+      ],
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "description": "Metadata represents common metadata fields shared across all layers",
+      "properties": {
+        "applicability-groups": {
+          "description": "applicability-groups is a list of groups used to classify within this artifact to specify scope",
+          "items": {
+            "$ref": "#/$defs/Group"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Group"
+            }
+          ],
+          "type": "array"
+        },
+        "author": {
+          "$ref": "#/$defs/Actor",
+          "description": "author is the person or group primarily responsible for this artifact"
+        },
+        "date": {
+          "$ref": "#/$defs/Datetime",
+          "description": "date is the publication or effective date of this artifact"
+        },
+        "description": {
+          "description": "description provides a high-level summary of the artifact's purpose and scope",
+          "type": "string"
+        },
+        "draft": {
+          "description": "draft indicates whether this artifact is a pre-release version; open to modification",
+          "type": "boolean"
+        },
+        "gemara-version": {
+          "description": "gemara-version declares which version of the Gemara specification this artifact conforms to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "lexicon": {
+          "$ref": "#/$defs/ArtifactMapping",
+          "description": "lexicon is a URI pointing to a controlled vocabulary or glossary relevant to this artifact"
+        },
+        "mapping-references": {
+          "description": "mapping-references is a list of external documents referenced within this artifact",
+          "items": {
+            "$ref": "#/$defs/MappingReference"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MappingReference"
+            }
+          ],
+          "type": "array"
+        },
+        "type": {
+          "$ref": "#/$defs/ArtifactType",
+          "description": "type identifies the kind of Gemara artifact for unambiguous parsing"
+        },
+        "version": {
+          "description": "version is the version identifier of this artifact",
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "description",
+        "gemara-version",
+        "id",
+        "type"
+      ],
+      "type": "object"
+    },
+    "MethodType": {
+      "enum": [
+        "Behavioral",
+        "Intent",
+        "Remediation",
+        "Gate"
+      ]
+    },
+    "MitigatedRisk": {
+      "additionalProperties": false,
+      "description": "MitigatedRisk represents a risk addressed by the policy",
+      "properties": {
+        "id": {
+          "description": "id allows this mitigated risk entry to be referenced by accepted risks",
+          "type": "string"
+        },
+        "risk": {
+          "$ref": "#/$defs/EntryMapping",
+          "description": "risk references the risk being mitigated"
+        }
+      },
+      "required": [
+        "id",
+        "risk"
+      ],
+      "type": "object"
+    },
+    "ModType": {
+      "description": "ModType defines the type of modification to the assessment requirement.",
+      "enum": [
+        "Add",
+        "Modify",
+        "Remove",
+        "Replace",
+        "Override"
+      ]
+    },
+    "ModeType": {
+      "enum": [
+        "Manual",
+        "Automated"
+      ]
+    },
+    "MultiEntryMapping": {
+      "$ref": "#/$defs/ArtifactMapping",
+      "additionalProperties": false,
+      "description": "MultiEntryMapping represents a mapping to an external reference with one or more entries.",
+      "properties": {
+        "entries": {
+          "description": "entries is a list of mapping entries",
+          "items": {
+            "$ref": "#/$defs/ArtifactMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/ArtifactMapping"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "entries"
+      ],
+      "type": "object"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "description": "Parameter defines a configurable parameter for assessment or enforcement activities.",
+      "properties": {
+        "accepted-values": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "id",
+        "label"
+      ],
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "description": "Policy represents a policy document with metadata, contacts, scope, imports, implementation plan, risks, and adherence requirements.",
+      "properties": {
+        "adherence": {
+          "$ref": "#/$defs/Adherence"
+        },
+        "contacts": {
+          "$ref": "#/$defs/RACI"
+        },
+        "implementation-plan": {
+          "$ref": "#/$defs/ImplementationPlan"
+        },
+        "imports": {
+          "$ref": "#/$defs/Imports"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "Policy"
+            }
+          },
+          "type": "object"
+        },
+        "risks": {
+          "$ref": "#/$defs/Risks"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "contacts",
+        "metadata",
+        "title"
+      ],
+      "type": "object"
+    },
+    "Principle": {
+      "additionalProperties": false,
+      "description": "Principle represents a foundational value or tenet that guides governance, design, and operational decisions",
+      "properties": {
+        "description": {
+          "description": "description explains the principle and its expected outcomes",
+          "type": "string"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this principle belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "rationale": {
+          "description": "rationale provides the context for this principle",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes the principle at a glance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "group",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "PrincipleCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "PrincipleCatalog describes a set of related principles and relevant metadata",
+      "properties": {
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "PrincipleCatalog"
+            }
+          },
+          "type": "object"
+        },
+        "principles": {
+          "description": "principles is a list of unique principles defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Principle"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Principle"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RACI": {
+      "additionalProperties": false,
+      "description": "RACI defines the roles responsible for managing an artifact",
+      "properties": {
+        "accountable": {
+          "description": "accountable identifies the entity ultimately accountable for the outcome",
+          "items": {
+            "$ref": "#/$defs/Contact"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Contact"
+            }
+          ],
+          "type": "array"
+        },
+        "consulted": {
+          "description": "consulted identifies entities whose input is required when assessing or responding to the artifact",
+          "items": {
+            "$ref": "#/$defs/Contact"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Contact"
+            }
+          ],
+          "type": "array"
+        },
+        "informed": {
+          "description": "informed identifies entities that should be notified about changes to the artifact status",
+          "items": {
+            "$ref": "#/$defs/Contact"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Contact"
+            }
+          ],
+          "type": "array"
+        },
+        "responsible": {
+          "description": "responsible identifies the entities responsible for executing work to manage or mitigate the artifact",
+          "items": {
+            "$ref": "#/$defs/Contact"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Contact"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "accountable",
+        "responsible"
+      ],
+      "type": "object"
+    },
+    "Rationale": {
+      "additionalProperties": false,
+      "description": "Rationale provides a structured way to communicate a guideline author's intent",
+      "properties": {
+        "goals": {
+          "description": "goals is a list of outcomes this guideline seeks to achieve",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "importance": {
+          "description": "importance is an explanation of why this guideline matters",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goals",
+        "importance"
+      ],
+      "type": "object"
+    },
+    "Recommendation": {
+      "additionalProperties": false,
+      "description": "Recommendation provides a corrective action for an audit result",
+      "properties": {
+        "id": {
+          "description": "id uniquely identifies this recommendation",
+          "type": "string"
+        },
+        "required": {
+          "description": "required indicates whether this recommendation is a mandatory corrective action",
+          "type": "boolean"
+        },
+        "text": {
+          "description": "text describes the recommended corrective action",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "RelationshipType": {
+      "description": "RelationshipType enumerates the nature of the mapping between entries.",
+      "enum": [
+        "implements",
+        "implemented-by",
+        "supports",
+        "supported-by",
+        "equivalent",
+        "subsumes",
+        "no-match",
+        "relates-to"
+      ]
+    },
+    "Resource": {
+      "$ref": "#/$defs/Entity",
+      "additionalProperties": false,
+      "description": "Resource represents an entity that exists in the system and can be evaluated",
+      "properties": {
+        "environment": {
+          "description": "environment describes where the resource exists (e.g., production, staging, development, specific region)",
+          "type": "string"
+        },
+        "owner": {
+          "$ref": "#/$defs/Contact",
+          "description": "owner is the contact information for the person or group responsible for managing or owning this resource"
+        }
+      },
+      "type": "object"
+    },
+    "Result": {
+      "enum": [
+        "Not Run",
+        "Passed",
+        "Failed",
+        "Needs Review",
+        "Not Applicable",
+        "Unknown"
+      ]
+    },
+    "ResultType": {
+      "description": "ResultType classifies the nature of an audit result",
+      "enum": [
+        "Gap",
+        "Finding",
+        "Observation",
+        "Strength"
+      ]
+    },
+    "Risk": {
+      "additionalProperties": false,
+      "description": "A Risk represents the potential for negative impact resulting from one or more threats.",
+      "properties": {
+        "description": {
+          "description": "description explains the risk scenario",
+          "type": "string"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this risk belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this risk to be referenced by other elements",
+          "type": "string"
+        },
+        "impact": {
+          "description": "impact describes the business or operational impact",
+          "type": "string"
+        },
+        "owner": {
+          "$ref": "#/$defs/RACI",
+          "description": "owner defines the RACI roles responsible for managing this risk"
+        },
+        "rank": {
+          "description": "rank optionally orders risks for the same catalog (e.g. when several share the same severity).\nLower values mean higher relative importance. Omitted when the four severity levels are enough.\nWhen set, each value must be unique among all risks in the catalog that specify rank.",
+          "type": "integer"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity",
+          "description": "severity describes the assessed level of this risk"
+        },
+        "threats": {
+          "description": "threats link this risk to Layer 2 threats",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "title": {
+          "description": "title describes the risk",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "group",
+        "id",
+        "severity",
+        "title"
+      ],
+      "type": "object"
+    },
+    "RiskAppetite": {
+      "description": "RiskAppetite defines the acceptable level of exposure for a risk category",
+      "enum": [
+        "Minimal",
+        "Low",
+        "Moderate",
+        "High"
+      ]
+    },
+    "RiskCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "A RiskCatalog is a structured collection of documented risks that may affect an organization,\nsystem, or service. It provides a centralized reference for risks that can be mapped to threats\nand referenced by policies when documenting how those risks are mitigated or accepted.",
+      "properties": {
+        "groups": {
+          "description": "groups narrows the base groups to risk categories with appetite and severity boundaries",
+          "items": {
+            "$ref": "#/$defs/RiskCategory"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/RiskCategory"
+            }
+          ],
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "RiskCatalog"
+            }
+          },
+          "type": "object"
+        },
+        "risks": {
+          "description": "risks is a list of risks defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Risk"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Risk"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RiskCategory": {
+      "$ref": "#/$defs/Group",
+      "additionalProperties": false,
+      "description": "RiskCategory describes a grouping of risks and defines appetite boundaries",
+      "properties": {
+        "appetite": {
+          "$ref": "#/$defs/RiskAppetite",
+          "description": "appetite defines the acceptable level of risk for this category"
+        },
+        "max-severity": {
+          "$ref": "#/$defs/Severity",
+          "description": "max-severity defines the risk tolerance boundary: the highest severity\nthe organization will accept within this category"
+        }
+      },
+      "required": [
+        "appetite"
+      ],
+      "type": "object"
+    },
+    "Risks": {
+      "additionalProperties": false,
+      "description": "Risks defines mitigated and accepted risks addressed by this policy.",
+      "properties": {
+        "accepted": {
+          "description": "Accepted risks require rationale (justification) and may include scope. Controls addressing these risks are implicitly identified through threat mappings.",
+          "items": {
+            "$ref": "#/$defs/AcceptedRisk"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/AcceptedRisk"
+            }
+          ],
+          "type": "array"
+        },
+        "mitigated": {
+          "description": "Mitigated risks only need reference-id and risk-id (no justification required)",
+          "items": {
+            "$ref": "#/$defs/MitigatedRisk"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MitigatedRisk"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "description": "Scope defines what is included and excluded from policy applicability.",
+      "properties": {
+        "in": {
+          "$ref": "#/$defs/Dimensions"
+        },
+        "out": {
+          "$ref": "#/$defs/Dimensions"
+        }
+      },
+      "type": "object"
+    },
+    "Severity": {
+      "description": "Severity defines the assessed level of a risk based on its potential impact and likelihood",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    },
+    "Statement": {
+      "additionalProperties": false,
+      "description": "Statement represents a structural sub-requirement within a guideline;\nThey do not increase strictness and all statements within a guideline apply together",
+      "properties": {
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "recommendations": {
+          "description": "recommendations is a list of non-binding suggestions to aid in evaluation or enforcement of the statement",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "text": {
+          "description": "text is the body of this statement",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes the contents of this statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "type": "object"
+    },
+    "Threat": {
+      "additionalProperties": false,
+      "description": "Threat describes a specifically-scoped opportunity for a negative impact to the organization",
+      "properties": {
+        "actors": {
+          "description": "actors describes the relevant internal or external threat actors",
+          "items": {
+            "$ref": "#/$defs/Actor"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Actor"
+            }
+          ],
+          "type": "array"
+        },
+        "capabilities": {
+          "description": "capabilities documents the relationship between this threat and a system capability",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        },
+        "description": {
+          "description": "description provides a detailed explanation of an opportunity for negative impact",
+          "type": "string"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this threat belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this entry to be referenced by other elements",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes this threat at a glance",
+          "type": "string"
+        },
+        "vectors": {
+          "description": "vectors documents the relationship between this threat and one or more vectors",
+          "items": {
+            "$ref": "#/$defs/MultiEntryMapping"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MultiEntryMapping"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "required": [
+        "capabilities",
+        "description",
+        "group",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "ThreatCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "description": "ThreatCatalog describes a set of topically-associated threats",
+      "properties": {
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "ThreatCatalog"
+            }
+          },
+          "type": "object"
+        },
+        "threats": {
+          "description": "threats is a list of threats defined by this catalog",
+          "items": {
+            "$ref": "#/$defs/Threat"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Threat"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "TypedMapping": {
+      "$ref": "#/$defs/ArtifactMapping",
+      "additionalProperties": false,
+      "description": "TypedMapping extends ArtifactMapping with a required entry-type for all entries in this direction",
+      "properties": {
+        "entry-type": {
+          "$ref": "#/$defs/EntryType",
+          "description": "entry-type identifies the type of atomic unit entries in this direction"
+        }
+      },
+      "required": [
+        "entry-type"
+      ],
+      "type": "object"
+    },
+    "Vector": {
+      "additionalProperties": false,
+      "description": "A Vector represents a method, pathway, or technique through which a threat may be realized or an attack may be carried out.",
+      "properties": {
+        "applicability": {
+          "description": "applicability specifies the contexts in which this vector can manifest",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        },
+        "description": {
+          "description": "description explains how the attack vector works",
+          "type": "string"
+        },
+        "group": {
+          "description": "group references by id a catalog group that this vector belongs to",
+          "type": "string"
+        },
+        "id": {
+          "description": "id allows this vector to be referenced by other elements",
+          "type": "string"
+        },
+        "title": {
+          "description": "title describes the vector",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "group",
+        "id",
+        "title"
+      ],
+      "type": "object"
+    },
+    "VectorCatalog": {
+      "$ref": "#/$defs/Catalog",
+      "additionalProperties": false,
+      "properties": {
+        "metadata": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "VectorCatalog"
+            }
+          },
+          "type": "object"
+        },
+        "vectors": {
+          "description": "vectors is a list of attack vectors documented in this catalog",
+          "items": {
+            "$ref": "#/$defs/Vector"
+          },
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/Vector"
+            }
+          ],
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "_AssessmentLogStrict": {
+      "$ref": "#/$defs/AssessmentLog",
+      "description": "_AssessmentLogStrict layers the \"start required unless unexecuted\" rule on top of #AssessmentLog",
+      "type": "object"
+    },
+    "_MappingStrict": {
+      "$ref": "#/$defs/Mapping",
+      "description": "_MappingStrict layers the \"targets required when not no-match\" rule on top of #Mapping",
+      "type": "object"
+    },
+    "reference-id": {
+      "description": "reference-id is the id for a MappingReference entry in the artifact's metadata",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

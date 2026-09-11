@@ -1,0 +1,91 @@
+# AIGF to NIST SP 800-53r5 Mapping Document
+title: AI Governance Framework to NIST SP 800-53r5
+metadata:
+  id: AIR-NIST-MAP-001
+  version: "0.1.0"
+  type: MappingDocument
+  gemara-version: "1.1.0"
+  description: >
+    Maps FINOS AI Governance Framework mitigations (guidelines) to
+    NIST SP 800-53 Revision 5 security and privacy controls.
+    References derived from AIGF mitigation frontmatter.
+  author:
+    id: finos
+    name: FINOS
+    type: Human
+  mapping-references:
+    - id: FINOS-AIR
+      title: AI Governance Framework
+      version: "0.1.0"
+      url: "https://aigf.finos.org"
+      description: FINOS AI Governance Framework mitigations and risks
+    - id: NIST-800-53
+      title: NIST SP 800-53 Revision 5
+      version: "rev5"
+      url: "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf"
+      description: Security and privacy guidelines for information systems and organizations
+
+source-reference:
+  reference-id: FINOS-AIR
+  entry-type: Guideline
+target-reference:
+  reference-id: NIST-800-53
+  entry-type: Guideline
+remarks: >
+  AIGF guidelines mapped to NIST 800-53r5 guidelines based on mitigation
+  frontmatter references from the original AIGF content.
+
+mappings:
+  # AIR-PREV-002: Data Filtering From External Knowledge Bases
+  - id: MAP-PREV002-data-filtering
+    source: AIR-PREV-002
+    relationship: supports
+    targets:
+      - entry-id: AC-4
+        rationale: >
+          Data filtering enforces information flow policies across AI data pipelines.
+      - entry-id: AC-22
+        rationale: >
+          Data filtering prevents sensitive data exposure in publicly accessible content.
+      - entry-id: MP-6
+        rationale: >
+          Data filtering implements sanitization of media and data stores in AI pipelines.
+      - entry-id: PT-2
+        rationale: >
+          Data filtering enforces authority and purpose constraints on data processing.
+      - entry-id: SI-4
+        rationale: >
+          Data filtering implements monitoring across AI data pipelines.
+      - entry-id: SI-12
+        rationale: >
+          Data filtering supports information management and retention policies.
+      - entry-id: SI-15
+        rationale: >
+          Data filtering implements output masking and sanitization.
+      - entry-id: SI-19
+        rationale: >
+          Data filtering supports de-identification of personal information.
+
+  # AIR-PREV-003: User/App/Model Firewalling
+  - id: MAP-PREV003-firewalling
+    source: AIR-PREV-003
+    relationship: supports
+    targets:
+      - entry-id: AC-4
+        rationale: >
+          Layered firewalling enforces information flow policies at AI boundaries.
+      - entry-id: SC-5
+        rationale: >
+          Firewalling protects against denial of service at model interaction points.
+      - entry-id: SC-7
+        rationale: >
+          Firewalling at user, application, and model layers provides boundary protection.
+      - entry-id: SI-4
+        rationale: >
+          Firewalling enables monitoring of AI interactions for anomalous activity.
+      - entry-id: SI-10
+        rationale: >
+          Firewalling implements input validation for user and application prompts.
+      - entry-id: SI-15
+        rationale: >
+          Firewalling implements output filtering for model responses.
