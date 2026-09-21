@@ -29,7 +29,7 @@ test = ["pytest>=8.0"]
 
 # ruff is pinned exactly because `poe generate` formats generated output with it,
 # so an unpinned bump would churn committed bytes and fail the drift gate.
-tooling = ["poethepoet>=0.30", "ruff==0.16.6"]
+tooling = ["poethepoet>=0.30", "ruff==0.16.7"]
 
 lint = [
     {include-group = "tooling"},
@@ -39,7 +39,7 @@ lint = [
 
 # Needed only to regenerate the models. Pinned exactly for the same reason as
 # ruff: it decides the committed bytes the drift gate compares against.
-codegen = [{include-group = "tooling"}, "datamodel-code-generator==0.76.2"]
+codegen = [{include-group = "tooling"}, "datamodel-code-generator==0.81.0"]
 
 # IMPORTANT: re-vendoring the schema also needs `cue` on PATH, which is not
 # a Python dependency and cannot be declared here. See CONTRIBUTING.md.
