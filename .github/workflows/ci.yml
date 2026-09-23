@@ -59,4 +59,4 @@ jobs:
       - run: uv sync --frozen --no-default-groups --group codegen --group lint
       - name: Regenerate models from the vendored schema
         run: uv run poe generate
-      - uses: ./.github/actions/check-generated-models
+      - uses: $/.github/actions/check-generated-models

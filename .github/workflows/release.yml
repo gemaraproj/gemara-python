@@ -33,7 +33,7 @@ jobs:
       - run: uv run pytest -q
       - name: Regenerate models from the vendored schema
         run: uv run poe generate
-      - uses: ./.github/actions/check-generated-models
+      - uses: $/.github/actions/check-generated-models
       - run: uv run poe lint
       - run: uv run ruff format --check .
       - run: uv run poe typecheck
@@ -72,4 +72,4 @@ jobs:
           enable-cache: false
       - name: Wait for PyPI index propagation
         run: sleep 60
-      - uses: ./.github/actions/verify-published-package
+      - uses: $/.github/actions/verify-published-package
