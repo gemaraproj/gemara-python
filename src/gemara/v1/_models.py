@@ -334,7 +334,7 @@ class MappingTarget(BaseModel):
     """rationale explains why this relationship exists for this target"""
     remarks: str | None = None
     """remarks is general prose regarding this target mapping"""
-    strength: float | None = None
+    strength: int | None = None
     """strength is the author's estimate of how completely the source satisfies this target; range 1-10"""
 
 
