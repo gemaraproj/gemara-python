@@ -39,7 +39,7 @@ def test_every_model_narrows_its_metadata_type() -> None:
     """Dispatch depends on each model's narrowed metadata type."""
     for name, model in DOCUMENT_TYPES.items():
         metadata = model.model_fields["metadata"].annotation
-        assert metadata is not None
+        assert isinstance(metadata, type), name
         assert metadata.__name__ == f"{name}Metadata", name
         assert issubclass(metadata, Metadata), name
 
