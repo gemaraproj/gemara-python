@@ -29,7 +29,7 @@ test = ["pytest>=8.0"]
 
 # ruff is pinned exactly because `poe generate` formats generated output with it,
 # so an unpinned bump would churn committed bytes and fail the drift gate.
-tooling = ["poethepoet>=0.30", "ruff==0.16.10"]
+tooling = ["poethepoet>=0.30", "ruff==0.17.0"]
 
 lint = [
     {include-group = "tooling"},
