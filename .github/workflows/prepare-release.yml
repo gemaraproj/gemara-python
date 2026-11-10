@@ -1,0 +1,72 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to prepare (X.Y.Z without v prefix)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare Release PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: false
+
+      - name: Validate target version and active draft
+        env:
+          TARGET_VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          uv run python tools/validate_release_version.py \
+            --version "$TARGET_VERSION" \
+            --repo "$REPOSITORY"
+
+      - name: Update version and lockfile
+        env:
+          TARGET_VERSION: ${{ inputs.version }}
+        run: |
+          uv version "$TARGET_VERSION"
+          uv lock --check
+
+      - name: Verify build and test suite
+        run: |
+          uv run poe test
+          uv run poe lint
+          uv run ruff format --check .
+          uv run poe typecheck
+          uv build
+
+      - name: Create or update release preparation pull request
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release-prep/v${{ inputs.version }}
+          delete-branch: false
+          title: "chore: prepare release v${{ inputs.version }}"
+          body: |
+            Release preparation for version `${{ inputs.version }}`.
+
+            This PR updates the package version in `pyproject.toml` and ensures `uv.lock` remains synchronized.
+
+            - Tag: `v${{ inputs.version }}`
+            - Excluded from release notes and version calculation via `skip-changelog`.
+          commit-message: "chore: prepare release v${{ inputs.version }}"
+          labels: |
+            release
+            skip-changelog
