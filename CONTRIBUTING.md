@@ -64,7 +64,50 @@ Publishing uses Trusted Publishing (OIDC); no API tokens are stored. The
 publisher registered on each index.
 
 - **Rehearse:** run the *Publish to TestPyPI* workflow manually
-  (`workflow_dispatch`) against any ref or push a test tag matching `test-vX.Y.X`.
-- **Release:** set `version` in `pyproject.toml`, then push a matching `vX.Y.Z`
-  tag. The release workflow refuses a tag that disagrees with that version, and
-  refuses `0.0.0` outright.
+  (`workflow_dispatch`) against any ref or push a test tag matching `test-vX.Y.Z`.
+
+### Release Versioning Policy
+
+Release Drafter automatically maintains a draft release on GitHub as pull requests are merged into `main`. The next version is resolved from PR labels using SemVer:
+
+- `release:major` / `major` / `breaking`: increments major version (`X+1.0.0`, e.g. `0.1.0` -> `1.0.0` or `1.2.3` -> `2.0.0`).
+- `release:minor` / `minor` / `feature` / `enhancement`: increments minor version (`X.Y+1.0`, e.g. `0.1.0` -> `0.2.0`).
+- `release:patch` / `patch` / `fix`: increments patch version (`X.Y.Z+1`, e.g. `0.1.0` -> `0.1.1`).
+
+**Rules & Precedence:**
+- **Baseline and pre-releases:** `include-pre-releases: true` is configured so that the existing `v0.1.0` pre-release acts as the baseline for change aggregation and next-version resolution.
+- **Highest increment wins:** When multiple merged PRs carry different release labels, the highest bump applies (`major` > `minor` > `patch`).
+- **Unlabeled PR fallback:** Pull requests merged without a release label default to a `patch` increment.
+- **Exclusion of release preparation PRs:** Pull requests labeled `skip-changelog` (such as automated release-preparation PRs) are excluded from both changelog notes and version calculation.
+
+### Maintainer Release Process
+
+This repository uses the shared organization release workflow from [`github-community-projects/ospo-reusable-workflows`](https://github.com/github-community-projects/ospo-reusable-workflows) (pinned at `v2.3.1`).
+
+1. **Check the Draft Release:**
+   Inspect the active draft release under GitHub Releases. Verify the draft release notes and resolved tag (e.g., `v0.2.0`).
+
+2. **Run the Version-Preparation Workflow:**
+   Trigger the *Prepare Release* workflow (`.github/workflows/prepare-release.yml`) via `workflow_dispatch`, passing the target version without the `v` prefix (e.g. `0.2.0`).
+   The workflow:
+   - Validates that the target version is a stable `X.Y.Z` semver, is strictly newer than the latest published release, and matches the active draft tag.
+   - Updates `pyproject.toml` with `uv version "<version>"` and verifies `uv.lock` with `uv lock --check`.
+   - Runs test, lint, formatting, typechecking, and package build checks.
+   - Opens or updates a release-preparation pull request targeting `main` with the `release` and `skip-changelog` labels on branch `release-prep/v<version>`. Re-running for the same version updates the existing PR without creating duplicates.
+
+   *Note on workflow permissions:* If the PR is created using GitHub Actions default `GITHUB_TOKEN`, GitHub branch protection or actions policies may require a maintainer approval before CI runs on the PR.
+
+3. **Review and Merge the Version PR:**
+   Review and merge the release-preparation PR into `main` with the `release` label.
+
+4. **Automated Release and PyPI Publishing:**
+   When the version PR carrying the `release` label is merged to `main`, `.github/workflows/release.yml` executes:
+   - Runs `github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml` to finalize and publish the GitHub release with tags `vX.Y.Z` and `vX`.
+   - Directly executes the chained `publish-pypi` job in the same run to verify and publish the package to PyPI via Trusted Publishing (`id-token: write`).
+   - Runs `verify-published` to test the published package on the live PyPI index.
+
+### Troubleshooting & Mismatch Resolution
+
+- **Draft / Tag / Package version mismatch:** If `pyproject.toml` does not match the published release tag `vX.Y.Z`, the release workflow fails immediately before building or publishing. Re-run *Prepare Release* for the matching version and ensure the PR is merged into `main` before publishing the release.
+- **Lockfile mismatch:** If `uv.lock` is out of sync, `uv lock --check` fails during the preparation workflow. Run `uv lock` locally or re-sync dependencies.
+- **Already published:** The validation script and PyPI trusted publishing prevent re-publishing an existing version.
