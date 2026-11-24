@@ -1,35 +1,77 @@
-name: Release
+---
+name: "Release"
 
 on:
+  workflow_dispatch:
   push:
-    tags: ["v*"]
+    branches:
+      - main
 
-permissions:
-  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+  queue: max
 
 jobs:
-  build:
-    name: Build and verify
+  release:
+    permissions:
+      contents: write       # Create release and push tags
+      pull-requests: read   # Read PR labels for release-drafter
+      packages: write       # Push container image to ghcr.io
+      id-token: write       # Federate for artifact attestation
+      attestations: write   # Generate build provenance attestations
+      discussions: write    # Create release announcement discussion
+    uses: github-community-projects/ospo-reusable-workflows/.github/workflows/release.yaml@ee8277bd76ef808b3a6e0bdd1f5a46a520a12c5d # v2.3.1
+    with:
+      publish: true
+      release-config-name: release-drafter.yml
+      release-only-with-label: true
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-pypi:
+    name: Build and publish to PyPI
+    needs: release
+    if: needs.release.outputs.full-tag != ''
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write # For PyPI trusted publishing
     steps:
+      - name: Validate release tag format
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+        run: |
+          uv run python -c '
+          import os, re, sys
+          tag = os.environ.get("TAG", "")
+          if not re.match(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$", tag):
+              print(f"::error::Release tag \"{tag}\" must follow stable semver format vX.Y.Z", file=sys.stderr)
+              sys.exit(1)
+          '
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.release.outputs.full-tag }}
           persist-credentials: false
+
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          # The release path builds the artifacts that get published, so it must
-          # not restore a cache that a pull request workflow could have poisoned.
           enable-cache: false
+
       - run: uv sync --frozen
+
       - name: Verify the tag matches the static version
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
         run: |
-          # Artifacts must never ship as 0.0.0, and the tag is the only thing
-          # that should ever disagree with pyproject.toml.
           declared="$(uv run python -c 'import tomllib,pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
-          tagged="${GITHUB_REF_NAME#v}"
+          tagged="${TAG#v}"
           test "$declared" != "0.0.0" || { echo "::error::version is 0.0.0"; exit 1; }
           test "$declared" = "$tagged" || {
             echo "::error::tag $tagged does not match pyproject version $declared"; exit 1; }
+
       - run: uv run pytest -q
       - name: Regenerate models from the vendored schema
         run: uv run poe generate
@@ -38,38 +80,37 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run poe typecheck
       - run: uv build
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: dist
-          path: dist/
 
-  publish-pypi:
-    name: Publish to PyPI
-    needs: build
-    runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      # Trusted publishing: mint a short-lived OIDC token instead of holding a
-      # long-lived PyPI API token in repository secrets.
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: dist
-          path: dist/
+      - name: Verify built artifact version matches pyproject.toml
+        env:
+          TAG: ${{ needs.release.outputs.full-tag }}
+        run: |
+          version="${TAG#v}"
+          test -f "dist/gemara_python-${version}.tar.gz" || {
+            echo "::error::Source archive dist/gemara_python-${version}.tar.gz missing"; exit 1; }
+          test -f "dist/gemara_python-${version}-py3-none-any.whl" || {
+            echo "::error::Wheel dist/gemara_python-${version}-py3-none-any.whl missing"; exit 1; }
+
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
 
   verify-published:
     name: Test the PyPI package
-    needs: publish-pypi
+    needs: [release, publish-pypi]
+    if: needs.release.outputs.full-tag != ''
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.release.outputs.full-tag }}
           persist-credentials: false
+
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: false
+
       - name: Wait for PyPI index propagation
         run: sleep 60
+
       - uses: $/.github/actions/verify-published-package
